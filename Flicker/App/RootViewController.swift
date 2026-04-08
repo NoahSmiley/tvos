@@ -120,7 +120,7 @@ final class RootViewController: UIViewController {
         sidebarWidthConstraint.constant = targetWidth
         sidebarVC.setSidebarExpanded(expanded)
 
-        UIView.animate(withDuration: 0.8, delay: 0, options: [.curveEaseInOut]) {
+        UIView.animate(withDuration: 0.35, delay: 0, options: [.curveEaseOut]) {
             self.view.layoutIfNeeded()
         }
     }
@@ -253,16 +253,13 @@ final class RootViewController: UIViewController {
     }
 
     private func transitionToContent(_ newVC: UIViewController) {
-        if let oldVC = currentContentVC, oldVC !== newVC {
-            oldVC.willMove(toParent: nil)
-            oldVC.view.removeFromSuperview()
-            oldVC.removeFromParent()
-        }
+        let oldVC = currentContentVC
 
         if newVC.parent !== self {
             addChild(newVC)
         }
         if newVC.view.superview !== contentContainerView {
+            newVC.view.alpha = 0
             contentContainerView.addSubview(newVC.view)
             newVC.view.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -271,9 +268,19 @@ final class RootViewController: UIViewController {
                 newVC.view.trailingAnchor.constraint(equalTo: contentContainerView.trailingAnchor),
                 newVC.view.bottomAnchor.constraint(equalTo: contentContainerView.bottomAnchor)
             ])
+
+            UIView.animate(withDuration: 0.15) {
+                newVC.view.alpha = 1
+            }
         }
         newVC.didMove(toParent: self)
         currentContentVC = newVC
+
+        if let oldVC, oldVC !== newVC {
+            oldVC.willMove(toParent: nil)
+            oldVC.view.removeFromSuperview()
+            oldVC.removeFromParent()
+        }
     }
 }
 
