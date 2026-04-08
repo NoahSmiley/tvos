@@ -217,54 +217,51 @@ final class JellyfinAPI {
 
     // MARK: - Playback
 
-    /// Direct stream — remuxes MKV to MP4 container without re-encoding video.
-    /// Preserves full 4K HEVC/HDR quality. Only the container changes.
-    func getStreamURL(itemId: String) -> URL? {
+    /// HLS remux — segments MKV into fMP4 chunks with NO re-encoding.
+    /// Full 4K HEVC, Dolby Vision, and Atmos audio preserved.
+    /// This is the primary playback method (same as Aether).
+    func getHLSRemuxURL(itemId: String) -> URL? {
         guard let token = accessToken else { return nil }
-        guard let base = buildURL(path: "Videos/\(itemId)/stream.mp4") else { return nil }
+        guard let base = buildURL(path: "Videos/\(itemId)/master.m3u8") else { return nil }
         var components = URLComponents(url: base, resolvingAgainstBaseURL: false)
         components?.queryItems = [
-            URLQueryItem(name: "Static", value: "false"),
             URLQueryItem(name: "MediaSourceId", value: itemId),
-            URLQueryItem(name: "Container", value: "mp4"),
             URLQueryItem(name: "VideoCodec", value: "hevc,h264"),
-            URLQueryItem(name: "AudioCodec", value: "aac,eac3,ac3"),
+            URLQueryItem(name: "AudioCodec", value: "eac3,ac3,aac"),
+            URLQueryItem(name: "Container", value: "mp4,ts"),
+            URLQueryItem(name: "SegmentContainer", value: "mp4"),
+            URLQueryItem(name: "SegmentLength", value: "6"),
+            URLQueryItem(name: "TranscodingMaxAudioChannels", value: "8"),
+            URLQueryItem(name: "MaxStreamingBitrate", value: "200000000"),
+            URLQueryItem(name: "VideoBitrate", value: "200000000"),
+            URLQueryItem(name: "SubtitleMethod", value: "Hls"),
             URLQueryItem(name: "api_key", value: token)
         ]
         return components?.url
     }
 
-    func getTranscodeURL(itemId: String) -> URL? {
+    /// Direct play — serves the raw file. Only works for MP4/MOV containers.
+    func getDirectPlayURL(itemId: String) -> URL? {
         guard let token = accessToken else { return nil }
-        guard let base = buildURL(path: "Videos/\(itemId)/master.m3u8") else { return nil }
+        guard let base = buildURL(path: "Videos/\(itemId)/stream.mp4") else { return nil }
         var components = URLComponents(url: base, resolvingAgainstBaseURL: false)
         components?.queryItems = [
-            URLQueryItem(name: "DeviceId", value: deviceId),
-            URLQueryItem(name: "api_key", value: token),
+            URLQueryItem(name: "Static", value: "true"),
             URLQueryItem(name: "MediaSourceId", value: itemId),
-            URLQueryItem(name: "VideoCodec", value: "hevc,h264"),
-            URLQueryItem(name: "AudioCodec", value: "aac,eac3,ac3"),
-            URLQueryItem(name: "MaxStreamingBitrate", value: "200000000"),
-            URLQueryItem(name: "TranscodingMaxAudioChannels", value: "8"),
-            URLQueryItem(name: "SubtitleMethod", value: "Hls"),
-            URLQueryItem(name: "TranscodingContainer", value: "mp4"),
-            URLQueryItem(name: "TranscodingProtocol", value: "hls"),
-            URLQueryItem(name: "CopyTimestamps", value: "true")
+            URLQueryItem(name: "api_key", value: token)
         ]
         return components?.url
     }
 
-    /// Returns the best playback URL based on quality setting.
-    /// Maximum = direct stream (remuxed MP4, full 4K HEVC, no re-encode).
-    /// Auto = direct stream first, HLS transcode as fallback.
+    /// Returns the best playback URL. Both modes use HLS remux (no re-encoding,
+    /// full 4K HEVC/HDR preserved). Segments into fMP4 chunks for smooth playback.
     func playbackURL(itemId: String) -> URL? {
-        if PlaybackQuality.current == .maximum {
-            // Full quality: remux to MP4 (no re-encoding, preserves 4K HEVC/HDR)
-            return getStreamURL(itemId: itemId)
-        } else {
-            // Auto: try direct stream first (fast + quality), transcode fallback
-            return getStreamURL(itemId: itemId) ?? getTranscodeURL(itemId: itemId)
-        }
+        return getHLSRemuxURL(itemId: itemId)
+    }
+
+    // Keep for Live TV player fallback
+    func getTranscodeURL(itemId: String) -> URL? {
+        return getHLSRemuxURL(itemId: itemId)
     }
 
     func reportPlaybackStart(itemId: String, positionTicks: Int64 = 0) async {
