@@ -9,9 +9,19 @@ final class LiveTVViewController: UIViewController {
     private var allCategories: [XtreamCategory] = []
     private var displayCategories: [CategoryItem] = [] // "Favorites", "All", then real categories
     private var allStreams: [XtreamStream] = []
-    private var filteredStreams: [XtreamStream] = []
+    private var filteredGroups: [ChannelGroup] = []
     private var selectedCategoryIndex = 0
     private var searchQuery = ""
+
+    /// Groups duplicate channels by cleaned base name
+    struct ChannelGroup {
+        let baseName: String
+        let streams: [XtreamStream]
+        let icon: String? // best available icon
+
+        var primaryStream: XtreamStream { streams[0] }
+        var hasVariants: Bool { streams.count > 1 }
+    }
 
     private var favorites: Set<Int> {
         get {
@@ -250,7 +260,7 @@ final class LiveTVViewController: UIViewController {
         }
     }
 
-    // MARK: - Filtering
+    // MARK: - Filtering & Grouping
 
     private func applyFilter() {
         var result = allStreams
@@ -264,8 +274,80 @@ final class LiveTVViewController: UIViewController {
             result = result.filter { cleanChannelName($0.name).lowercased().contains(query) }
         }
 
-        filteredStreams = result
+        // Group by base name
+        var groupDict: [String: [XtreamStream]] = [:]
+        var groupOrder: [String] = []
+
+        for stream in result {
+            let base = baseChannelName(stream.name)
+            if groupDict[base] == nil {
+                groupOrder.append(base)
+            }
+            groupDict[base, default: []].append(stream)
+        }
+
+        filteredGroups = groupOrder.compactMap { base in
+            guard let streams = groupDict[base] else { return nil }
+            let icon = streams.first(where: { $0.streamIcon != nil })?.streamIcon
+            return ChannelGroup(baseName: base, streams: streams, icon: icon)
+        }
+
         channelTableView.reloadData()
+    }
+
+    /// Aggressive name cleaning to find the core channel identity for grouping
+    private func baseChannelName(_ name: String) -> String {
+        var clean = name
+
+        // Remove country prefix
+        if let pipeRange = clean.range(of: "| ") {
+            let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound])
+            if prefix.count <= 4 {
+                clean = String(clean[pipeRange.upperBound...])
+            }
+        }
+
+        // Remove quality and regional tags
+        let tags = [" UHD/4K+", " UHD/4K", " UHD", " 4K+", " 4K", " FHD", " HD",
+                    " SD", " WEST", " EAST", " PLUS", " (bk)", " (EVENT ONLY)"]
+        for tag in tags {
+            clean = clean.replacingOccurrences(of: tag, with: "", options: .caseInsensitive)
+        }
+
+        // Remove Unicode superscript junk
+        let junkChars = CharacterSet(charactersIn: "ᴴᴰᴿᴬᵂ⁶⁰ᶠᵖˢᶜᶦᵗʸ")
+        clean = String(clean.unicodeScalars.filter { !junkChars.contains($0) })
+        clean = clean.trimmingCharacters(in: .whitespaces)
+
+        while clean.hasSuffix("-") || clean.hasSuffix("/") {
+            clean = String(clean.dropLast()).trimmingCharacters(in: .whitespaces)
+        }
+
+        return clean.isEmpty ? name : clean
+    }
+
+    /// Gets the variant label for a stream (the quality/region suffix)
+    private func variantLabel(for stream: XtreamStream) -> String {
+        let base = baseChannelName(stream.name)
+        let clean = cleanChannelName(stream.name)
+
+        // Find the difference between clean name and base name
+        var label = clean
+        if clean.hasPrefix(base) {
+            label = String(clean.dropFirst(base.count)).trimmingCharacters(in: .whitespaces)
+        }
+
+        if label.isEmpty {
+            // Try to extract quality from original name
+            let original = stream.name.uppercased()
+            if original.contains("4K") || original.contains("UHD") { return "4K" }
+            if original.contains("FHD") { return "FHD" }
+            if original.contains("HD") { return "HD" }
+            if original.contains("WEST") { return "West" }
+            if original.contains("EAST") { return "East" }
+            return "Default"
+        }
+        return label
     }
 
     @objc private func searchChanged() {
@@ -400,14 +482,15 @@ extension LiveTVViewController: UICollectionViewDataSource, UICollectionViewDele
 extension LiveTVViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        filteredStreams.count
+        filteredGroups.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "XtreamChannel", for: indexPath) as! XtreamChannelCell
-        let stream = filteredStreams[indexPath.row]
+        let group = filteredGroups[indexPath.row]
+        let stream = group.primaryStream
         let isFav = favorites.contains(stream.streamId)
-        cell.configure(with: stream, cleanName: cleanChannelName(stream.name), isFavorite: isFav)
+        cell.configure(with: stream, cleanName: group.baseName, isFavorite: isFav, variantCount: group.streams.count)
         cell.onFavoriteToggle = { [weak self] in
             self?.toggleFavorite(streamId: stream.streamId)
         }
@@ -415,13 +498,39 @@ extension LiveTVViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let stream = filteredStreams[indexPath.row]
-        guard let url = XtreamAPI.shared.streamURL(for: stream.streamId) else { return }
+        let group = filteredGroups[indexPath.row]
 
+        if group.hasVariants {
+            showVariantPicker(for: group)
+        } else {
+            playStream(group.primaryStream, title: group.baseName)
+        }
+    }
+
+    private func showVariantPicker(for group: ChannelGroup) {
+        let alert = UIAlertController(
+            title: group.baseName,
+            message: "\(group.streams.count) sources available",
+            preferredStyle: .actionSheet
+        )
+
+        for stream in group.streams {
+            let label = variantLabel(for: stream)
+            alert.addAction(UIAlertAction(title: label, style: .default) { [weak self] _ in
+                self?.playStream(stream, title: group.baseName)
+            })
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func playStream(_ stream: XtreamStream, title: String) {
+        guard let url = XtreamAPI.shared.streamURL(for: stream.streamId) else { return }
         let playerVC = PlayerViewController(
             streamURL: url,
             itemId: nil,
-            title: cleanChannelName(stream.name),
+            title: title,
             startPositionTicks: 0
         )
         present(playerVC, animated: true)
@@ -510,6 +619,7 @@ final class XtreamChannelCell: UITableViewCell {
 
     private let logoImageView = UIImageView()
     private let channelNameLabel = UILabel()
+    private let variantBadge = UILabel()
     private let favoriteIcon = UIImageView()
     private let liveIndicator = UIView()
 
@@ -538,6 +648,16 @@ final class XtreamChannelCell: UITableViewCell {
         channelNameLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(channelNameLabel)
 
+        variantBadge.font = .systemFont(ofSize: 16, weight: .bold)
+        variantBadge.textColor = UIColor(white: 0.8, alpha: 1)
+        variantBadge.textAlignment = .center
+        variantBadge.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        variantBadge.layer.cornerRadius = 10
+        variantBadge.clipsToBounds = true
+        variantBadge.isHidden = true
+        variantBadge.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(variantBadge)
+
         favoriteIcon.image = UIImage(systemName: "star")
         favoriteIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20)
         favoriteIcon.tintColor = UIColor(white: 0.3, alpha: 1)
@@ -557,7 +677,12 @@ final class XtreamChannelCell: UITableViewCell {
 
             channelNameLabel.leadingAnchor.constraint(equalTo: logoImageView.trailingAnchor, constant: 20),
             channelNameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            channelNameLabel.trailingAnchor.constraint(lessThanOrEqualTo: favoriteIcon.leadingAnchor, constant: -16),
+
+            variantBadge.leadingAnchor.constraint(equalTo: channelNameLabel.trailingAnchor, constant: 12),
+            variantBadge.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            variantBadge.widthAnchor.constraint(greaterThanOrEqualToConstant: 44),
+            variantBadge.heightAnchor.constraint(equalToConstant: 28),
+            variantBadge.trailingAnchor.constraint(lessThanOrEqualTo: favoriteIcon.leadingAnchor, constant: -16),
 
             favoriteIcon.trailingAnchor.constraint(equalTo: liveIndicator.leadingAnchor, constant: -20),
             favoriteIcon.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -569,8 +694,15 @@ final class XtreamChannelCell: UITableViewCell {
         ])
     }
 
-    func configure(with stream: XtreamStream, cleanName: String, isFavorite: Bool) {
+    func configure(with stream: XtreamStream, cleanName: String, isFavorite: Bool, variantCount: Int = 1) {
         channelNameLabel.text = cleanName
+
+        if variantCount > 1 {
+            variantBadge.text = "  \(variantCount) sources  "
+            variantBadge.isHidden = false
+        } else {
+            variantBadge.isHidden = true
+        }
 
         favoriteIcon.image = UIImage(systemName: isFavorite ? "star.fill" : "star")
         favoriteIcon.tintColor = isFavorite ? UIColor(red: 1, green: 0.84, blue: 0, alpha: 1) : UIColor(white: 0.3, alpha: 1)
@@ -593,6 +725,7 @@ final class XtreamChannelCell: UITableViewCell {
         super.prepareForReuse()
         loadTask?.cancel()
         logoImageView.image = UIImage(systemName: "tv")
+        variantBadge.isHidden = true
         onFavoriteToggle = nil
     }
 
