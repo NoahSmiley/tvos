@@ -3,14 +3,14 @@ import AVKit
 
 final class PlayerViewController: AVPlayerViewController {
 
-    private let streamURL: URL
+    private var streamURL: URL
     private let itemId: String?
     private let mediaTitle: String
     private let startPositionTicks: Int64
+    private var hasTriedFallback = false
 
     private var reportTimer: Timer?
     private var statusObserver: NSKeyValueObservation?
-    private var errorObserver: NSKeyValueObservation?
 
     init(streamURL: URL, itemId: String?, title: String, startPositionTicks: Int64) {
         self.streamURL = streamURL
@@ -50,7 +50,7 @@ final class PlayerViewController: AVPlayerViewController {
                 self?.beginPlayback()
             case .failed:
                 print("[Player] Failed: \(item.error?.localizedDescription ?? "unknown")")
-                self?.showError(item.error?.localizedDescription ?? "Failed to load media")
+                self?.tryFallbackOrShowError(item.error?.localizedDescription ?? "Failed to load media")
             default:
                 break
             }
@@ -95,7 +95,6 @@ final class PlayerViewController: AVPlayerViewController {
         reportTimer?.invalidate()
         reportTimer = nil
         statusObserver?.invalidate()
-        errorObserver?.invalidate()
         player?.pause()
 
         // Report stop to Jellyfin
@@ -117,7 +116,51 @@ final class PlayerViewController: AVPlayerViewController {
         return Int64(time.seconds * 10_000_000)
     }
 
-    // MARK: - Error
+    // MARK: - Fallback & Error
+
+    private func tryFallbackOrShowError(_ message: String) {
+        guard !hasTriedFallback, let itemId else {
+            showError(message)
+            return
+        }
+
+        hasTriedFallback = true
+        print("[Player] Trying HLS transcode fallback...")
+
+        // Try HLS transcode as fallback
+        guard let fallbackURL = JellyfinAPI.shared.getTranscodeURL(itemId: itemId) else {
+            showError(message)
+            return
+        }
+
+        streamURL = fallbackURL
+        statusObserver?.invalidate()
+        player?.pause()
+
+        let asset = AVURLAsset(url: fallbackURL)
+        let newItem = AVPlayerItem(asset: asset)
+        newItem.preferredForwardBufferDuration = 5
+
+        statusObserver = newItem.observe(\.status, options: [.new]) { [weak self] item, _ in
+            switch item.status {
+            case .readyToPlay:
+                print("[Player] Fallback ready to play")
+                self?.beginPlayback()
+            case .failed:
+                print("[Player] Fallback also failed")
+                self?.showError(item.error?.localizedDescription ?? "Failed to load media")
+            default:
+                break
+            }
+        }
+
+        let titleItem = AVMutableMetadataItem()
+        titleItem.identifier = .commonIdentifierTitle
+        titleItem.value = mediaTitle as NSString
+        newItem.externalMetadata = [titleItem]
+
+        player?.replaceCurrentItem(with: newItem)
+    }
 
     private func showError(_ message: String) {
         let alert = UIAlertController(title: "Playback Error", message: message, preferredStyle: .alert)

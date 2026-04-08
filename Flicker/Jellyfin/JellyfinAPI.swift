@@ -217,15 +217,18 @@ final class JellyfinAPI {
 
     // MARK: - Playback
 
-    /// Direct stream — remuxes to MP4 container without re-encoding video.
-    /// Preserves full 4K HEVC quality in an Apple TV compatible container.
+    /// Direct stream — remuxes MKV to MP4 container without re-encoding video.
+    /// Preserves full 4K HEVC/HDR quality. Only the container changes.
     func getStreamURL(itemId: String) -> URL? {
         guard let token = accessToken else { return nil }
         guard let base = buildURL(path: "Videos/\(itemId)/stream.mp4") else { return nil }
         var components = URLComponents(url: base, resolvingAgainstBaseURL: false)
         components?.queryItems = [
-            URLQueryItem(name: "Static", value: "true"),
+            URLQueryItem(name: "Static", value: "false"),
             URLQueryItem(name: "MediaSourceId", value: itemId),
+            URLQueryItem(name: "Container", value: "mp4"),
+            URLQueryItem(name: "VideoCodec", value: "hevc,h264"),
+            URLQueryItem(name: "AudioCodec", value: "aac,eac3,ac3"),
             URLQueryItem(name: "api_key", value: token)
         ]
         return components?.url
@@ -239,14 +242,14 @@ final class JellyfinAPI {
             URLQueryItem(name: "DeviceId", value: deviceId),
             URLQueryItem(name: "api_key", value: token),
             URLQueryItem(name: "MediaSourceId", value: itemId),
-            URLQueryItem(name: "VideoCodec", value: "h264"),
-            URLQueryItem(name: "AudioCodec", value: "aac"),
+            URLQueryItem(name: "VideoCodec", value: "hevc,h264"),
+            URLQueryItem(name: "AudioCodec", value: "aac,eac3,ac3"),
             URLQueryItem(name: "MaxStreamingBitrate", value: "200000000"),
-            URLQueryItem(name: "TranscodingMaxAudioChannels", value: "6"),
+            URLQueryItem(name: "TranscodingMaxAudioChannels", value: "8"),
             URLQueryItem(name: "SubtitleMethod", value: "Hls"),
-            URLQueryItem(name: "RequireNonAnamorphic", value: "true"),
-            URLQueryItem(name: "TranscodingContainer", value: "ts"),
-            URLQueryItem(name: "TranscodingProtocol", value: "hls")
+            URLQueryItem(name: "TranscodingContainer", value: "mp4"),
+            URLQueryItem(name: "TranscodingProtocol", value: "hls"),
+            URLQueryItem(name: "CopyTimestamps", value: "true")
         ]
         return components?.url
     }
