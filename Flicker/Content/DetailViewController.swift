@@ -522,8 +522,7 @@ final class DetailViewController: UIViewController {
     }
 
     private func playEpisode(_ episode: JellyfinItem) {
-        guard let url = JellyfinAPI.shared.getStreamURL(itemId: episode.id)
-                ?? JellyfinAPI.shared.getTranscodeURL(itemId: episode.id) else { return }
+        guard let url = JellyfinAPI.shared.playbackURL(itemId: episode.id) else { return }
         let startTicks = episode.userData?.playbackPositionTicks ?? 0
         let displayTitle = "S\(episode.parentIndexNumber ?? 0)E\(episode.indexNumber ?? 0) - \(episode.name)"
         let playerVC = PlayerViewController(streamURL: url, itemId: episode.id, title: displayTitle, startPositionTicks: startTicks)
@@ -533,8 +532,7 @@ final class DetailViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func playTapped() {
-        guard let url = JellyfinAPI.shared.getStreamURL(itemId: item.id)
-                ?? JellyfinAPI.shared.getTranscodeURL(itemId: item.id) else { return }
+        guard let url = JellyfinAPI.shared.playbackURL(itemId: item.id) else { return }
         let playerVC = PlayerViewController(
             streamURL: url, itemId: item.id,
             title: item.seriesName ?? item.name,

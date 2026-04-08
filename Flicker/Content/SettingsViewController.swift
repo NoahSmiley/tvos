@@ -1,9 +1,37 @@
 import UIKit
 
+enum PlaybackQuality: Int {
+    case auto = 0        // HLS transcode (max compatibility)
+    case maximum = 1     // Direct play (full 4K, no transcoding)
+
+    var title: String {
+        switch self {
+        case .auto: return "Auto (Transcode)"
+        case .maximum: return "Maximum (Direct Play)"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .auto: return "Best compatibility. Transcodes to H.264."
+        case .maximum: return "No compromise. Full 4K Blu-ray quality."
+        }
+    }
+
+    static var current: PlaybackQuality {
+        PlaybackQuality(rawValue: UserDefaults.standard.integer(forKey: "flickerPlaybackQuality")) ?? .auto
+    }
+
+    func save() {
+        UserDefaults.standard.set(rawValue, forKey: "flickerPlaybackQuality")
+    }
+}
+
 final class SettingsViewController: UIViewController {
 
     private let stackView = UIStackView()
     private let statusLabel = UILabel()
+    private var qualityValueLabel: UILabel?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,9 +82,37 @@ final class SettingsViewController: UIViewController {
         }
 
         // Spacer
-        let spacer = UIView()
-        spacer.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        stackView.addArrangedSubview(spacer)
+        let spacer1 = UIView()
+        spacer1.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        stackView.addArrangedSubview(spacer1)
+
+        // Playback Section
+        addSectionHeader("Playback")
+
+        let qualityButton = UIButton(type: .system)
+        let quality = PlaybackQuality.current
+        qualityButton.setTitle("  Quality: \(quality.title)", for: .normal)
+        qualityButton.titleLabel?.font = .systemFont(ofSize: 26, weight: .semibold)
+        qualityButton.tintColor = .white
+        qualityButton.contentHorizontalAlignment = .left
+        qualityButton.backgroundColor = UIColor.white.withAlphaComponent(0.08)
+        qualityButton.layer.cornerRadius = 14
+        qualityButton.contentEdgeInsets = UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20)
+        qualityButton.addTarget(self, action: #selector(qualityTapped), for: .primaryActionTriggered)
+        stackView.addArrangedSubview(qualityButton)
+
+        let qualityDesc = UILabel()
+        qualityDesc.text = quality.subtitle
+        qualityDesc.font = .systemFont(ofSize: 20, weight: .regular)
+        qualityDesc.textColor = UIColor(white: 0.5, alpha: 1)
+        qualityDesc.numberOfLines = 0
+        stackView.addArrangedSubview(qualityDesc)
+        qualityValueLabel = qualityDesc
+
+        // Spacer
+        let spacer2 = UIView()
+        spacer2.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        stackView.addArrangedSubview(spacer2)
 
         // IPTV Section
         addSectionHeader("IPTV (Xtream)")
@@ -94,6 +150,16 @@ final class SettingsViewController: UIViewController {
         row.addArrangedSubview(valueLabel)
         row.heightAnchor.constraint(equalToConstant: 44).isActive = true
         stackView.addArrangedSubview(row)
+    }
+
+    @objc private func qualityTapped() {
+        let current = PlaybackQuality.current
+        let newQuality: PlaybackQuality = current == .auto ? .maximum : .auto
+        newQuality.save()
+
+        // Rebuild UI to reflect change
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        setupUI()
     }
 
     @objc private func reconnectTapped() {

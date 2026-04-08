@@ -99,8 +99,7 @@ extension EpisodesViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let ep = episodes[indexPath.row]
-        guard let url = JellyfinAPI.shared.getStreamURL(itemId: ep.id)
-                ?? JellyfinAPI.shared.getTranscodeURL(itemId: ep.id) else { return }
+        guard let url = JellyfinAPI.shared.playbackURL(itemId: ep.id) else { return }
         let startTicks = ep.userData?.playbackPositionTicks ?? 0
         let displayTitle = "S\(ep.parentIndexNumber ?? 0)E\(ep.indexNumber ?? 0) - \(ep.name)"
         let playerVC = PlayerViewController(streamURL: url, itemId: ep.id, title: displayTitle, startPositionTicks: startTicks)

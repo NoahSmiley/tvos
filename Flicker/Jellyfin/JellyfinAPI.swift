@@ -235,12 +235,27 @@ final class JellyfinAPI {
         components?.queryItems = [
             URLQueryItem(name: "DeviceId", value: deviceId),
             URLQueryItem(name: "api_key", value: token),
+            URLQueryItem(name: "MediaSourceId", value: itemId),
             URLQueryItem(name: "VideoCodec", value: "h264"),
             URLQueryItem(name: "AudioCodec", value: "aac"),
             URLQueryItem(name: "MaxStreamingBitrate", value: "200000000"),
-            URLQueryItem(name: "TranscodingMaxAudioChannels", value: "6")
+            URLQueryItem(name: "TranscodingMaxAudioChannels", value: "6"),
+            URLQueryItem(name: "SubtitleMethod", value: "Hls"),
+            URLQueryItem(name: "RequireNonAnamorphic", value: "true"),
+            URLQueryItem(name: "TranscodingContainer", value: "ts"),
+            URLQueryItem(name: "TranscodingProtocol", value: "hls")
         ]
         return components?.url
+    }
+
+    /// Returns the best playback URL based on quality setting.
+    /// Maximum = direct stream (full quality), Auto = HLS transcode (compatibility).
+    func playbackURL(itemId: String) -> URL? {
+        if PlaybackQuality.current == .maximum {
+            return getStreamURL(itemId: itemId) ?? getTranscodeURL(itemId: itemId)
+        } else {
+            return getTranscodeURL(itemId: itemId) ?? getStreamURL(itemId: itemId)
+        }
     }
 
     func reportPlaybackStart(itemId: String, positionTicks: Int64 = 0) async {
