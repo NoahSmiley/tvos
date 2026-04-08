@@ -2,54 +2,45 @@ import UIKit
 
 final class LiveTVViewController: UIViewController {
 
+    private let scrollView = UIScrollView()
+    private let contentStack = UIStackView()
     private let searchBar = UITextField()
     private let categoryCollectionView: UICollectionView
-    private let channelTableView = UITableView(frame: .zero, style: .plain)
+    private var channelGridStack: UIStackView? // rows of channel cards
 
     private var allCategories: [XtreamCategory] = []
-    private var displayCategories: [CategoryItem] = [] // "Favorites", "All", then real categories
+    private var displayCategories: [CategoryItem] = []
     private var allStreams: [XtreamStream] = []
     private var filteredGroups: [ChannelGroup] = []
     private var selectedCategoryIndex = 0
     private var searchQuery = ""
 
-    /// Groups duplicate channels by cleaned base name
-    struct ChannelGroup {
-        let baseName: String
-        let streams: [XtreamStream]
-        let icon: String? // best available icon
-
-        var primaryStream: XtreamStream { streams[0] }
-        var hasVariants: Bool { streams.count > 1 }
-    }
-
     private var favorites: Set<Int> {
-        get {
-            Set(UserDefaults.standard.array(forKey: "flickerFavoriteChannels") as? [Int] ?? [])
-        }
-        set {
-            UserDefaults.standard.set(Array(newValue), forKey: "flickerFavoriteChannels")
-        }
+        get { Set(UserDefaults.standard.array(forKey: "flickerFavoriteChannels") as? [Int] ?? []) }
+        set { UserDefaults.standard.set(Array(newValue), forKey: "flickerFavoriteChannels") }
     }
-
-    private var skeletonView: UIView?
-    private var recentlyWatchedRow: UIView?
-    private var recentlyWatchedStack: UIStackView?
 
     private var recentChannelIds: [Int] {
         get { UserDefaults.standard.array(forKey: "flickerRecentChannels") as? [Int] ?? [] }
         set { UserDefaults.standard.set(newValue, forKey: "flickerRecentChannels") }
     }
 
-    // All streams cache for lookup by ID
     private var allStreamsCache: [Int: XtreamStream] = [:]
+    private var skeletonView: UIView?
+    private var recentRow: UIView?
 
-    // Virtual category items
+    struct ChannelGroup {
+        let baseName: String
+        let streams: [XtreamStream]
+        let icon: String?
+        var primaryStream: XtreamStream { streams[0] }
+        var hasVariants: Bool { streams.count > 1 }
+    }
+
     struct CategoryItem {
         let id: String
         let name: String
-        let isSpecial: Bool // favorites, all
-
+        let isSpecial: Bool
         static let favorites = CategoryItem(id: "__favorites__", name: "Favorites", isSpecial: true)
         static let all = CategoryItem(id: "__all__", name: "All Channels", isSpecial: true)
     }
@@ -57,9 +48,8 @@ final class LiveTVViewController: UIViewController {
     override init(nibName: String?, bundle: Bundle?) {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.itemSize = CGSize(width: 240, height: 50)
+        layout.itemSize = CGSize(width: 220, height: 50)
         layout.minimumInteritemSpacing = 12
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 24)
         categoryCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         super.init(nibName: nibName, bundle: bundle)
     }
@@ -69,35 +59,54 @@ final class LiveTVViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
-        setupHeader()
-        setupSearchBar()
-        setupRecentlyWatched()
-        setupCategoryBar()
-        setupChannelTable()
+        setupLayout()
         showSkeleton()
         loadCategories()
     }
 
-    // MARK: - Setup
-
-    private func setupHeader() {
-        let label = UILabel()
-        label.text = "Live TV"
-        label.font = .systemFont(ofSize: 48, weight: .bold)
-        label.textColor = .white
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.tag = 500
-        view.addSubview(label)
-
-        NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
-            label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 48)
-        ])
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        refreshRecentRow()
     }
 
-    private func setupSearchBar() {
+    // MARK: - Layout
+
+    private func setupLayout() {
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(scrollView)
+
+        contentStack.axis = .vertical
+        contentStack.spacing = 32
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentStack)
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            contentStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50),
+            contentStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 48),
+            contentStack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -48),
+            contentStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -60),
+            contentStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -96)
+        ])
+
+        // Header row: title + search
+        let headerRow = UIView()
+        headerRow.translatesAutoresizingMaskIntoConstraints = false
+
+        let titleLabel = UILabel()
+        titleLabel.text = "Live TV"
+        titleLabel.font = .systemFont(ofSize: 48, weight: .bold)
+        titleLabel.textColor = .white
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        headerRow.addSubview(titleLabel)
+
         searchBar.placeholder = "Search channels..."
-        searchBar.font = .systemFont(ofSize: 24)
+        searchBar.font = .systemFont(ofSize: 22)
         searchBar.textColor = .white
         searchBar.backgroundColor = UIColor(white: 0.12, alpha: 1)
         searchBar.layer.cornerRadius = 14
@@ -105,28 +114,88 @@ final class LiveTVViewController: UIViewController {
         searchBar.leftViewMode = .always
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.addTarget(self, action: #selector(searchChanged), for: .editingChanged)
-        searchBar.tag = 502
-        view.addSubview(searchBar)
+        headerRow.addSubview(searchBar)
 
-        let header = view.viewWithTag(500)!
         NSLayoutConstraint.activate([
-            searchBar.centerYAnchor.constraint(equalTo: header.centerYAnchor),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -48),
-            searchBar.widthAnchor.constraint(equalToConstant: 400),
-            searchBar.heightAnchor.constraint(equalToConstant: 56)
+            headerRow.heightAnchor.constraint(equalToConstant: 56),
+            titleLabel.leadingAnchor.constraint(equalTo: headerRow.leadingAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: headerRow.centerYAnchor),
+            searchBar.trailingAnchor.constraint(equalTo: headerRow.trailingAnchor),
+            searchBar.centerYAnchor.constraint(equalTo: headerRow.centerYAnchor),
+            searchBar.widthAnchor.constraint(equalToConstant: 380),
+            searchBar.heightAnchor.constraint(equalToConstant: 50)
         ])
+        contentStack.addArrangedSubview(headerRow)
+
+        // Recently watched placeholder
+        let recentContainer = UIView()
+        recentContainer.isHidden = true
+        recentContainer.tag = 700
+        contentStack.addArrangedSubview(recentContainer)
+        recentRow = recentContainer
+
+        // Category pills
+        categoryCollectionView.backgroundColor = .clear
+        categoryCollectionView.showsHorizontalScrollIndicator = false
+        categoryCollectionView.register(CategoryPillCell.self, forCellWithReuseIdentifier: "CategoryPill")
+        categoryCollectionView.dataSource = self
+        categoryCollectionView.delegate = self
+        categoryCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        categoryCollectionView.heightAnchor.constraint(equalToConstant: 65).isActive = true
+        contentStack.addArrangedSubview(categoryCollectionView)
     }
 
-    private func setupRecentlyWatched() {
-        let container = UIView()
-        container.translatesAutoresizingMaskIntoConstraints = false
-        container.isHidden = true
-        container.tag = 503
-        view.addSubview(container)
+    // MARK: - Skeleton
+
+    private func showSkeleton() {
+        let wrapper = UIView()
+        wrapper.translatesAutoresizingMaskIntoConstraints = false
+
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.spacing = 24
+        row.translatesAutoresizingMaskIntoConstraints = false
+        wrapper.addSubview(row)
+
+        for _ in 0..<5 {
+            let card = ShimmerView()
+            card.layer.cornerRadius = 12
+            card.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                card.widthAnchor.constraint(equalToConstant: 300),
+                card.heightAnchor.constraint(equalToConstant: 260)
+            ])
+            row.addArrangedSubview(card)
+        }
+
+        NSLayoutConstraint.activate([
+            row.topAnchor.constraint(equalTo: wrapper.topAnchor),
+            row.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
+            row.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor)
+        ])
+
+        contentStack.addArrangedSubview(wrapper)
+        skeletonView = wrapper
+    }
+
+    private func removeSkeleton() {
+        guard let sv = skeletonView else { return }
+        UIView.animate(withDuration: 0.3) { sv.alpha = 0 } completion: { _ in sv.removeFromSuperview() }
+        skeletonView = nil
+    }
+
+    // MARK: - Recently Watched
+
+    private func refreshRecentRow() {
+        guard let container = recentRow else { return }
+        container.subviews.forEach { $0.removeFromSuperview() }
+
+        let recentIds = recentChannelIds
+        guard !recentIds.isEmpty else { container.isHidden = true; return }
 
         let label = UILabel()
         label.text = "Recently Watched"
-        label.font = .systemFont(ofSize: 26, weight: .bold)
+        label.font = .systemFont(ofSize: 28, weight: .bold)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(label)
@@ -139,26 +208,27 @@ final class LiveTVViewController: UIViewController {
 
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.spacing = 16
+        stack.spacing = 20
         stack.translatesAutoresizingMaskIntoConstraints = false
         scroll.addSubview(stack)
-        recentlyWatchedStack = stack
 
-        let header = view.viewWithTag(500)!
+        for streamId in recentIds.prefix(10) {
+            guard let stream = allStreamsCache[streamId] else { continue }
+            let card = LiveTVCard(stream: stream, cleanName: cleanChannelName(stream.name), style: .small)
+            card.onSelect = { [weak self] in
+                self?.playStream(stream, title: self?.cleanChannelName(stream.name) ?? stream.name)
+            }
+            stack.addArrangedSubview(card)
+        }
+
         NSLayoutConstraint.activate([
-            container.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 20),
-            container.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 48),
-            container.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
-
             label.topAnchor.constraint(equalTo: container.topAnchor),
             label.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-
-            scroll.topAnchor.constraint(equalTo: label.bottomAnchor, constant: 12),
+            scroll.topAnchor.constraint(equalTo: label.bottomAnchor, constant: 16),
             scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             scroll.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            scroll.heightAnchor.constraint(equalToConstant: 80),
-
+            scroll.heightAnchor.constraint(equalToConstant: 200),
             stack.topAnchor.constraint(equalTo: scroll.topAnchor),
             stack.leadingAnchor.constraint(equalTo: scroll.leadingAnchor),
             stack.trailingAnchor.constraint(equalTo: scroll.trailingAnchor),
@@ -166,126 +236,7 @@ final class LiveTVViewController: UIViewController {
             stack.heightAnchor.constraint(equalTo: scroll.heightAnchor)
         ])
 
-        recentlyWatchedRow = container
-    }
-
-    private func refreshRecentlyWatched() {
-        guard let stack = recentlyWatchedStack, let container = recentlyWatchedRow else { return }
-        stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-
-        let recentIds = recentChannelIds
-        guard !recentIds.isEmpty else {
-            container.isHidden = true
-            return
-        }
-
-        for streamId in recentIds {
-            guard let stream = allStreamsCache[streamId] else { continue }
-            let btn = RecentChannelButton(stream: stream, cleanName: cleanChannelName(stream.name))
-            btn.onSelect = { [weak self] in
-                self?.playStream(stream, title: self?.cleanChannelName(stream.name) ?? stream.name)
-            }
-            stack.addArrangedSubview(btn)
-        }
-
         container.isHidden = stack.arrangedSubviews.isEmpty
-    }
-
-    private func trackRecentChannel(_ streamId: Int) {
-        var recent = recentChannelIds
-        recent.removeAll { $0 == streamId }
-        recent.insert(streamId, at: 0)
-        if recent.count > 15 { recent = Array(recent.prefix(15)) }
-        recentChannelIds = recent
-    }
-
-    private func setupCategoryBar() {
-        categoryCollectionView.backgroundColor = .clear
-        categoryCollectionView.showsHorizontalScrollIndicator = false
-        categoryCollectionView.register(CategoryPillCell.self, forCellWithReuseIdentifier: "CategoryPill")
-        categoryCollectionView.dataSource = self
-        categoryCollectionView.delegate = self
-        categoryCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        categoryCollectionView.tag = 501
-        view.addSubview(categoryCollectionView)
-
-        // Anchor below recently watched if visible, otherwise below header
-        let recentRow = view.viewWithTag(503)!
-        let header = view.viewWithTag(500)!
-
-        let topToRecent = categoryCollectionView.topAnchor.constraint(equalTo: recentRow.bottomAnchor, constant: 20)
-        topToRecent.priority = .defaultHigh
-        let topToHeader = categoryCollectionView.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 24)
-        topToHeader.priority = .defaultLow
-
-        NSLayoutConstraint.activate([
-            topToRecent,
-            topToHeader,
-            categoryCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 48),
-            categoryCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
-            categoryCollectionView.heightAnchor.constraint(equalToConstant: 70)
-        ])
-    }
-
-    private func setupChannelTable() {
-        channelTableView.backgroundColor = .clear
-        channelTableView.register(XtreamChannelCell.self, forCellReuseIdentifier: "XtreamChannel")
-        channelTableView.dataSource = self
-        channelTableView.delegate = self
-        channelTableView.rowHeight = 90
-        channelTableView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(channelTableView)
-
-        let catBar = view.viewWithTag(501)!
-        NSLayoutConstraint.activate([
-            channelTableView.topAnchor.constraint(equalTo: catBar.bottomAnchor, constant: 16),
-            channelTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            channelTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
-            channelTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-    }
-
-    // MARK: - Skeleton
-
-    private func showSkeleton() {
-        let container = UIView()
-        container.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(container)
-
-        let catBar = view.viewWithTag(501)!
-        NSLayoutConstraint.activate([
-            container.topAnchor.constraint(equalTo: catBar.bottomAnchor, constant: 16),
-            container.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            container.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
-            container.heightAnchor.constraint(equalToConstant: 600)
-        ])
-
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.spacing = 12
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: container.topAnchor),
-            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor)
-        ])
-
-        for _ in 0..<6 {
-            let row = ShimmerView()
-            row.layer.cornerRadius = 12
-            row.translatesAutoresizingMaskIntoConstraints = false
-            row.heightAnchor.constraint(equalToConstant: 80).isActive = true
-            stack.addArrangedSubview(row)
-        }
-
-        skeletonView = container
-    }
-
-    private func removeSkeleton() {
-        guard let sv = skeletonView else { return }
-        UIView.animate(withDuration: 0.3) { sv.alpha = 0 } completion: { _ in sv.removeFromSuperview() }
-        skeletonView = nil
     }
 
     // MARK: - Data Loading
@@ -297,7 +248,6 @@ final class LiveTVViewController: UIViewController {
                 buildDisplayCategories()
                 categoryCollectionView.reloadData()
 
-                // Default to Favorites if any, otherwise first US Entertainment category
                 if !favorites.isEmpty {
                     selectedCategoryIndex = 0
                     loadFavorites()
@@ -312,20 +262,16 @@ final class LiveTVViewController: UIViewController {
                 }
             } catch {
                 removeSkeleton()
-                showError(error.localizedDescription)
             }
         }
     }
 
     private func buildDisplayCategories() {
         displayCategories = [CategoryItem.favorites, CategoryItem.all]
-
-        // Filter to US categories and a few universal ones (4K, etc.)
         let usCategories = allCategories.filter { cat in
             let name = cat.categoryName.uppercased()
             return name.hasPrefix("US|") || name.hasPrefix("US |") || name.contains("4K")
         }
-
         for cat in usCategories {
             let cleanName = cleanCategoryName(cat.categoryName)
             guard !cleanName.isEmpty else { continue }
@@ -340,11 +286,8 @@ final class LiveTVViewController: UIViewController {
                 cacheStreams(allStreams)
                 removeSkeleton()
                 applyFilter()
-                refreshRecentlyWatched()
-            } catch {
-                removeSkeleton()
-                showError(error.localizedDescription)
-            }
+                refreshRecentRow()
+            } catch { removeSkeleton() }
         }
     }
 
@@ -355,11 +298,8 @@ final class LiveTVViewController: UIViewController {
                 cacheStreams(allStreams)
                 removeSkeleton()
                 applyFilter()
-                refreshRecentlyWatched()
-            } catch {
-                removeSkeleton()
-                showError(error.localizedDescription)
-            }
+                refreshRecentRow()
+            } catch { removeSkeleton() }
         }
     }
 
@@ -372,48 +312,43 @@ final class LiveTVViewController: UIViewController {
                 allStreams = all.filter { favIds.contains($0.streamId) }
                 removeSkeleton()
                 applyFilter()
-                refreshRecentlyWatched()
-            } catch {
-                removeSkeleton()
-                showError(error.localizedDescription)
-            }
+                refreshRecentRow()
+            } catch { removeSkeleton() }
         }
     }
 
     private func cacheStreams(_ streams: [XtreamStream]) {
-        for stream in streams {
-            allStreamsCache[stream.streamId] = stream
-        }
+        for stream in streams { allStreamsCache[stream.streamId] = stream }
     }
 
     // MARK: - Filtering & Grouping
 
     private func applyFilter() {
         var result = allStreams
-
-        // Filter out separator rows and junk channels
+        // Filter junk and non-US channels
         let junkPatterns = ["#####", "NO SIGNAL", "NO EVENT", "EVENT ONLY", "OFF AIR",
                            "[OFFLINE]", "NOT AVAILABLE", "COMING SOON"]
         result = result.filter { stream in
             let upper = stream.name.uppercased()
-            return !junkPatterns.contains(where: { upper.contains($0) })
+            if junkPatterns.contains(where: { upper.contains($0) }) { return false }
+            // For categories that mix regions, only keep US/4K prefixed or unprefixed channels
+            if upper.contains("| ") || upper.contains("|") {
+                let prefix = upper.components(separatedBy: "|").first?.trimmingCharacters(in: .whitespaces) ?? ""
+                return prefix == "US" || prefix == "4K" || prefix.isEmpty
+            }
+            return true
         }
 
-        // Apply search
         if !searchQuery.isEmpty {
             let query = searchQuery.lowercased()
             result = result.filter { cleanChannelName($0.name).lowercased().contains(query) }
         }
 
-        // Group by base name
         var groupDict: [String: [XtreamStream]] = [:]
         var groupOrder: [String] = []
-
         for stream in result {
             let base = baseChannelName(stream.name)
-            if groupDict[base] == nil {
-                groupOrder.append(base)
-            }
+            if groupDict[base] == nil { groupOrder.append(base) }
             groupDict[base, default: []].append(stream)
         }
 
@@ -423,62 +358,7 @@ final class LiveTVViewController: UIViewController {
             return ChannelGroup(baseName: titleCase(base), streams: streams, icon: icon)
         }
 
-        channelTableView.reloadData()
-    }
-
-    /// Aggressive name cleaning to find the core channel identity for grouping
-    private func baseChannelName(_ name: String) -> String {
-        var clean = name
-
-        // Remove country prefix
-        if let pipeRange = clean.range(of: "| ") {
-            let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound])
-            if prefix.count <= 4 {
-                clean = String(clean[pipeRange.upperBound...])
-            }
-        }
-
-        // Remove quality and regional tags
-        let tags = [" UHD/4K+", " UHD/4K", " UHD", " 4K+", " 4K", " FHD", " HD",
-                    " SD", " WEST", " EAST", " PLUS", " (bk)", " (EVENT ONLY)"]
-        for tag in tags {
-            clean = clean.replacingOccurrences(of: tag, with: "", options: .caseInsensitive)
-        }
-
-        // Remove Unicode superscript junk
-        let junkChars = CharacterSet(charactersIn: "ᴴᴰᴿᴬᵂ⁶⁰ᶠᵖˢᶜᶦᵗʸ")
-        clean = String(clean.unicodeScalars.filter { !junkChars.contains($0) })
-        clean = clean.trimmingCharacters(in: .whitespaces)
-
-        while clean.hasSuffix("-") || clean.hasSuffix("/") {
-            clean = String(clean.dropLast()).trimmingCharacters(in: .whitespaces)
-        }
-
-        return clean.isEmpty ? name : clean
-    }
-
-    /// Gets the variant label for a stream (the quality/region suffix)
-    private func variantLabel(for stream: XtreamStream) -> String {
-        let base = baseChannelName(stream.name)
-        let clean = cleanChannelName(stream.name)
-
-        // Find the difference between clean name and base name
-        var label = clean
-        if clean.hasPrefix(base) {
-            label = String(clean.dropFirst(base.count)).trimmingCharacters(in: .whitespaces)
-        }
-
-        if label.isEmpty {
-            // Try to extract quality from original name
-            let original = stream.name.uppercased()
-            if original.contains("4K") || original.contains("UHD") { return "4K" }
-            if original.contains("FHD") { return "FHD" }
-            if original.contains("HD") { return "HD" }
-            if original.contains("WEST") { return "West" }
-            if original.contains("EAST") { return "East" }
-            return "Default"
-        }
-        return label
+        rebuildChannelGrid()
     }
 
     @objc private func searchChanged() {
@@ -486,126 +366,194 @@ final class LiveTVViewController: UIViewController {
         applyFilter()
     }
 
+    // MARK: - Channel Card Grid
+
+    private func rebuildChannelGrid() {
+        channelGridStack?.removeFromSuperview()
+
+        let grid = UIStackView()
+        grid.axis = .vertical
+        grid.spacing = 24
+        grid.translatesAutoresizingMaskIntoConstraints = false
+
+        // Build horizontal rows of cards (5-6 per row for scrolling)
+        let cardsPerBatch = 20
+        var batchStart = 0
+
+        while batchStart < filteredGroups.count {
+            let batchEnd = min(batchStart + cardsPerBatch, filteredGroups.count)
+            let batch = Array(filteredGroups[batchStart..<batchEnd])
+
+            let scroll = UIScrollView()
+            scroll.showsHorizontalScrollIndicator = false
+            scroll.clipsToBounds = false
+            scroll.translatesAutoresizingMaskIntoConstraints = false
+
+            let row = UIStackView()
+            row.axis = .horizontal
+            row.spacing = 24
+            row.translatesAutoresizingMaskIntoConstraints = false
+            scroll.addSubview(row)
+
+            for group in batch {
+                let card = LiveTVCard(
+                    stream: group.primaryStream,
+                    cleanName: group.baseName,
+                    style: .large,
+                    variantCount: group.streams.count,
+                    allStreamsCache: allStreamsCache
+                )
+                card.onSelect = { [weak self] in
+                    if group.hasVariants {
+                        self?.showVariantPicker(for: group)
+                    } else {
+                        self?.playStream(group.primaryStream, title: group.baseName)
+                    }
+                }
+                card.onFavorite = { [weak self] in
+                    self?.toggleFavorite(streamId: group.primaryStream.streamId)
+                }
+                row.addArrangedSubview(card)
+            }
+
+            NSLayoutConstraint.activate([
+                scroll.heightAnchor.constraint(equalToConstant: 280),
+                row.topAnchor.constraint(equalTo: scroll.topAnchor),
+                row.leadingAnchor.constraint(equalTo: scroll.leadingAnchor),
+                row.trailingAnchor.constraint(equalTo: scroll.trailingAnchor),
+                row.bottomAnchor.constraint(equalTo: scroll.bottomAnchor),
+                row.heightAnchor.constraint(equalTo: scroll.heightAnchor)
+            ])
+
+            grid.addArrangedSubview(scroll)
+            batchStart = batchEnd
+        }
+
+        contentStack.addArrangedSubview(grid)
+        channelGridStack = grid
+    }
+
+    // MARK: - Actions
+
+    private func showVariantPicker(for group: ChannelGroup) {
+        let alert = UIAlertController(title: group.baseName, message: "\(group.streams.count) sources", preferredStyle: .actionSheet)
+        for stream in group.streams {
+            let label = variantLabel(for: stream)
+            alert.addAction(UIAlertAction(title: label, style: .default) { [weak self] _ in
+                self?.playStream(stream, title: group.baseName)
+            })
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func playStream(_ stream: XtreamStream, title: String) {
+        trackRecentChannel(stream.streamId)
+        let channelList = filteredGroups.map { $0.primaryStream }
+        let playerVC = LiveTVPlayerViewController(
+            stream: stream, channels: channelList,
+            cleanName: { [weak self] s in self?.cleanChannelName(s.name) ?? s.name }
+        )
+        playerVC.onChannelChanged = { [weak self] s in self?.trackRecentChannel(s.streamId) }
+        present(playerVC, animated: true)
+    }
+
+    private func toggleFavorite(streamId: Int) {
+        var favs = favorites
+        if favs.contains(streamId) { favs.remove(streamId) } else { favs.insert(streamId) }
+        favorites = favs
+        if selectedCategoryIndex == 0 { loadFavorites() }
+    }
+
+    private func trackRecentChannel(_ streamId: Int) {
+        var recent = recentChannelIds
+        recent.removeAll { $0 == streamId }
+        recent.insert(streamId, at: 0)
+        if recent.count > 15 { recent = Array(recent.prefix(15)) }
+        recentChannelIds = recent
+    }
+
     // MARK: - Name Cleaning
 
     private func cleanChannelName(_ name: String) -> String {
         var clean = name
-
-        // Remove country prefixes like "US| ", "UK| ", "CA| "
         if let pipeRange = clean.range(of: "| ") {
             let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound])
-            if prefix.count <= 4 {
-                clean = String(clean[pipeRange.upperBound...])
-            }
+            if prefix.count <= 4 { clean = String(clean[pipeRange.upperBound...]) }
         }
-        // Also handle "US|" without space
         if let pipeRange = clean.range(of: "|") {
             let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound]).trimmingCharacters(in: .whitespaces)
             if prefix.count <= 4 && prefix == prefix.uppercased() {
                 clean = String(clean[pipeRange.upperBound...]).trimmingCharacters(in: .whitespaces)
             }
         }
-
-        // Remove Unicode superscript junk
         let junkChars = CharacterSet(charactersIn: "ᴴᴰᴿᴬᵂ⁶⁰ᶠᵖˢᶜᶦᵗʸ")
         clean = String(clean.unicodeScalars.filter { !junkChars.contains($0) })
-
-        // Trim whitespace
         clean = clean.trimmingCharacters(in: .whitespaces)
-
-        // Remove trailing " -" or "- " artifacts
         while clean.hasSuffix("-") || clean.hasSuffix(" -") {
             clean = String(clean.dropLast()).trimmingCharacters(in: .whitespaces)
         }
-
-        // Title case: "SKY SPORTS F1" -> "Sky Sports F1"
-        clean = titleCase(clean)
-
-        return clean.isEmpty ? name : clean
-    }
-
-    private func titleCase(_ str: String) -> String {
-        // Only convert if it's ALL CAPS
-        guard str == str.uppercased(), str.count > 3 else { return str }
-
-        return str.split(separator: " ").map { word in
-            let w = String(word)
-            // Keep short acronyms uppercase (TV, HD, F1, ESPN, etc.)
-            if w.count <= 3 || (w == w.uppercased() && w.rangeOfCharacter(from: .decimalDigits) != nil && w.count <= 4) {
-                return w
-            }
-            // Known acronyms to keep uppercase
-            let acronyms: Set<String> = ["ESPN", "NBC", "CBS", "ABC", "FOX", "CNN", "MSNBC", "TNT",
-                                          "TBS", "AMC", "BET", "MTV", "VH1", "USA", "HGTV", "NESN",
-                                          "CNBC", "CSPAN", "BBC", "HBO", "MAX", "FX", "FXX"]
-            if acronyms.contains(w) { return w }
-
-            return w.prefix(1).uppercased() + w.dropFirst().lowercased()
-        }.joined(separator: " ")
+        return titleCase(clean.isEmpty ? name : clean)
     }
 
     private func cleanCategoryName(_ name: String) -> String {
         var clean = name
-
-        // Remove country prefix
         if let pipeRange = clean.range(of: "| ") {
             let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound])
-            if prefix.count <= 4 {
-                clean = String(clean[pipeRange.upperBound...])
-            }
+            if prefix.count <= 4 { clean = String(clean[pipeRange.upperBound...]) }
         }
-
-        // Remove Unicode superscript junk
         let junkChars = CharacterSet(charactersIn: "ᴴᴰᴿᴬᵂ⁶⁰ᶠᵖˢᶜᶦᵗʸ/")
         clean = String(clean.unicodeScalars.filter { !junkChars.contains($0) })
         clean = clean.trimmingCharacters(in: .whitespaces)
-
         return clean.isEmpty ? name : clean
     }
 
-    // MARK: - Favorites
-
-    private func toggleFavorite(streamId: Int) {
-        var favs = favorites
-        if favs.contains(streamId) {
-            favs.remove(streamId)
-        } else {
-            favs.insert(streamId)
+    private func baseChannelName(_ name: String) -> String {
+        var clean = name
+        if let pipeRange = clean.range(of: "| ") {
+            let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound])
+            if prefix.count <= 4 { clean = String(clean[pipeRange.upperBound...]) }
         }
-        favorites = favs
-
-        // If viewing favorites, reload
-        if selectedCategoryIndex == 0 {
-            loadFavorites()
-        } else {
-            channelTableView.reloadData()
+        let tags = [" UHD/4K+", " UHD/4K", " UHD", " 4K+", " 4K", " FHD", " HD",
+                    " SD", " WEST", " EAST", " PLUS", " (bk)", " (EVENT ONLY)"]
+        for tag in tags { clean = clean.replacingOccurrences(of: tag, with: "", options: .caseInsensitive) }
+        let junkChars = CharacterSet(charactersIn: "ᴴᴰᴿᴬᵂ⁶⁰ᶠᵖˢᶜᶦᵗʸ")
+        clean = String(clean.unicodeScalars.filter { !junkChars.contains($0) })
+        clean = clean.trimmingCharacters(in: .whitespaces)
+        while clean.hasSuffix("-") || clean.hasSuffix("/") {
+            clean = String(clean.dropLast()).trimmingCharacters(in: .whitespaces)
         }
+        return clean.isEmpty ? name : clean
     }
 
-    // MARK: - Error
+    private func variantLabel(for stream: XtreamStream) -> String {
+        let original = stream.name.uppercased()
+        if original.contains("4K") || original.contains("UHD") { return "4K" }
+        if original.contains("FHD") { return "FHD" }
+        if original.contains("WEST") { return "West" }
+        if original.contains("EAST") { return "East" }
+        if original.contains("PLUS") { return "Plus" }
+        if original.contains("HD") { return "HD" }
+        return "Default"
+    }
 
-    private func showError(_ message: String) {
-        let label = UILabel()
-        label.text = message
-        label.font = .systemFont(ofSize: 28, weight: .medium)
-        label.textColor = UIColor(red: 1, green: 0.4, blue: 0.4, alpha: 1)
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(label)
-
-        NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            label.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -100)
-        ])
+    private func titleCase(_ str: String) -> String {
+        guard str == str.uppercased(), str.count > 3 else { return str }
+        let acronyms: Set<String> = ["ESPN", "NBC", "CBS", "ABC", "FOX", "CNN", "MSNBC", "TNT",
+                                      "TBS", "AMC", "BET", "MTV", "VH1", "USA", "HGTV", "NESN",
+                                      "CNBC", "CSPAN", "BBC", "HBO", "MAX", "FX", "FXX"]
+        return str.split(separator: " ").map { word in
+            let w = String(word)
+            if w.count <= 3 || acronyms.contains(w) { return w }
+            if w.count <= 4 && w.rangeOfCharacter(from: .decimalDigits) != nil { return w }
+            return w.prefix(1).uppercased() + w.dropFirst().lowercased()
+        }.joined(separator: " ")
     }
 }
 
 // MARK: - Category Collection
 
 extension LiveTVViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         displayCategories.count
     }
@@ -613,101 +561,24 @@ extension LiveTVViewController: UICollectionViewDataSource, UICollectionViewDele
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CategoryPill", for: indexPath) as! CategoryPillCell
         let cat = displayCategories[indexPath.item]
-        let icon: String? = cat.id == "__favorites__" ? "star.fill" : nil
-        cell.configure(title: cat.name, isSelected: indexPath.item == selectedCategoryIndex, icon: icon)
+        cell.configure(title: cat.name, isSelected: indexPath.item == selectedCategoryIndex,
+                       icon: cat.id == "__favorites__" ? "star.fill" : nil)
         return cell
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         selectedCategoryIndex = indexPath.item
         categoryCollectionView.reloadData()
-
         let cat = displayCategories[indexPath.item]
-        if cat.id == "__favorites__" {
-            loadFavorites()
-        } else if cat.id == "__all__" {
-            loadAllStreams()
-        } else {
-            loadStreams(categoryId: cat.id)
-        }
-    }
-}
-
-// MARK: - Channel Table
-
-extension LiveTVViewController: UITableViewDataSource, UITableViewDelegate {
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        filteredGroups.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "XtreamChannel", for: indexPath) as! XtreamChannelCell
-        let group = filteredGroups[indexPath.row]
-        let stream = group.primaryStream
-        let isFav = favorites.contains(stream.streamId)
-        cell.configure(with: stream, cleanName: group.baseName, isFavorite: isFav, variantCount: group.streams.count, allStreams: allStreamsCache)
-        cell.onFavoriteToggle = { [weak self] in
-            self?.toggleFavorite(streamId: stream.streamId)
-        }
-        return cell
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let group = filteredGroups[indexPath.row]
-
-        if group.hasVariants {
-            showVariantPicker(for: group)
-        } else {
-            playStream(group.primaryStream, title: group.baseName)
-        }
-    }
-
-    private func showVariantPicker(for group: ChannelGroup) {
-        let alert = UIAlertController(
-            title: group.baseName,
-            message: "\(group.streams.count) sources available",
-            preferredStyle: .actionSheet
-        )
-
-        for stream in group.streams {
-            let label = variantLabel(for: stream)
-            alert.addAction(UIAlertAction(title: label, style: .default) { [weak self] _ in
-                self?.playStream(stream, title: group.baseName)
-            })
-        }
-
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alert, animated: true)
-    }
-
-    private func playStream(_ stream: XtreamStream, title: String) {
-        trackRecentChannel(stream.streamId)
-
-        // Get the flat list of streams for channel surfing
-        let channelList = filteredGroups.map { $0.primaryStream }
-
-        let playerVC = LiveTVPlayerViewController(
-            stream: stream,
-            channels: channelList,
-            cleanName: { [weak self] s in self?.cleanChannelName(s.name) ?? s.name }
-        )
-        playerVC.onChannelChanged = { [weak self] newStream in
-            self?.trackRecentChannel(newStream.streamId)
-        }
-        present(playerVC, animated: true)
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        refreshRecentlyWatched()
+        if cat.id == "__favorites__" { loadFavorites() }
+        else if cat.id == "__all__" { loadAllStreams() }
+        else { loadStreams(categoryId: cat.id) }
     }
 }
 
 // MARK: - Category Pill Cell
 
 final class CategoryPillCell: UICollectionViewCell {
-
     private let label = UILabel()
     private let iconView = UIImageView()
 
@@ -745,312 +616,168 @@ final class CategoryPillCell: UICollectionViewCell {
     func configure(title: String, isSelected: Bool, icon: String? = nil) {
         label.text = title
         label.textColor = isSelected ? .white : .gray
-
         if let icon {
             iconView.image = UIImage(systemName: icon)
             iconView.isHidden = false
             iconView.tintColor = isSelected ? UIColor(red: 1, green: 0.84, blue: 0, alpha: 1) : .gray
-        } else {
-            iconView.isHidden = true
-        }
-
-        contentView.backgroundColor = isSelected
-            ? UIColor.white.withAlphaComponent(0.15)
-            : UIColor(white: 0.1, alpha: 1)
-
-        if isSelected {
-            contentView.layer.borderWidth = 1.5
-            contentView.layer.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
-        } else {
-            contentView.layer.borderWidth = 0
-        }
+        } else { iconView.isHidden = true }
+        contentView.backgroundColor = isSelected ? UIColor.white.withAlphaComponent(0.15) : UIColor(white: 0.1, alpha: 1)
+        contentView.layer.borderWidth = isSelected ? 1.5 : 0
+        contentView.layer.borderColor = isSelected ? UIColor.white.withAlphaComponent(0.3).cgColor : nil
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         coordinator.addCoordinatedAnimations({
-            if self.isFocused {
-                self.transform = CGAffineTransform(scaleX: 1.08, y: 1.08)
-            } else {
-                self.transform = .identity
-            }
+            self.transform = self.isFocused ? CGAffineTransform(scaleX: 1.08, y: 1.08) : .identity
         }, completion: nil)
     }
 }
 
-// MARK: - Channel Cell
+// MARK: - Live TV Card (Fubo-style)
 
-final class XtreamChannelCell: UITableViewCell {
+final class LiveTVCard: UIButton {
 
-    var onFavoriteToggle: (() -> Void)?
+    var onSelect: (() -> Void)?
+    var onFavorite: (() -> Void)?
+
+    enum Style { case large, small }
 
     private let logoImageView = UIImageView()
-    private let badgeLabel = UILabel()
+    private let thumbnailView = UIView()
+    private let liveBadge = UILabel()
     private let channelNameLabel = UILabel()
-    private let nowPlayingLabel = UILabel()
+    private let programLabel = UILabel()
     private let variantBadge = UILabel()
-    private let favoriteIcon = UIImageView()
-    private let liveIndicator = UIView()
 
     private var loadTask: Task<Void, Never>?
     private var epgTask: Task<Void, Never>?
 
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupViews()
-    }
+    private let cardWidth: CGFloat
+    private let cardHeight: CGFloat
 
-    required init?(coder: NSCoder) { fatalError() }
+    init(stream: XtreamStream, cleanName: String, style: Style, variantCount: Int = 1, allStreamsCache: [Int: XtreamStream]? = nil) {
+        cardWidth = style == .large ? 300 : 200
+        cardHeight = style == .large ? 260 : 180
+        super.init(frame: .zero)
 
-    private func setupViews() {
-        backgroundColor = .clear
-        selectionStyle = .none
+        backgroundColor = UIColor(white: 0.1, alpha: 1)
+        layer.cornerRadius = 14
+        clipsToBounds = true
 
-        let logoContainer = UIView()
-        logoContainer.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(logoContainer)
-
+        // Channel logo (top-left)
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.clipsToBounds = true
-        logoImageView.layer.cornerRadius = 8
-        logoImageView.backgroundColor = UIColor(white: 0.12, alpha: 1)
+        logoImageView.tintColor = UIColor(white: 0.4, alpha: 1)
+        logoImageView.image = UIImage(systemName: "tv")
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
-        logoContainer.addSubview(logoImageView)
+        addSubview(logoImageView)
 
-        // 4K badge (hidden by default)
-        badgeLabel.text = "4K"
-        badgeLabel.font = .systemFont(ofSize: 11, weight: .heavy)
-        badgeLabel.textColor = .black
-        badgeLabel.textAlignment = .center
-        badgeLabel.backgroundColor = UIColor(red: 1, green: 0.84, blue: 0, alpha: 1)
-        badgeLabel.layer.cornerRadius = 4
-        badgeLabel.clipsToBounds = true
-        badgeLabel.isHidden = true
-        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
-        logoContainer.addSubview(badgeLabel)
+        // Thumbnail area (dark gradient placeholder)
+        thumbnailView.backgroundColor = UIColor(white: 0.08, alpha: 1)
+        thumbnailView.layer.cornerRadius = 8
+        thumbnailView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(thumbnailView)
 
-        channelNameLabel.font = .systemFont(ofSize: 26, weight: .semibold)
+        // LIVE badge
+        liveBadge.text = " LIVE "
+        liveBadge.font = .systemFont(ofSize: 13, weight: .heavy)
+        liveBadge.textColor = .white
+        liveBadge.backgroundColor = UIColor(red: 0.9, green: 0.15, blue: 0.15, alpha: 1)
+        liveBadge.layer.cornerRadius = 4
+        liveBadge.clipsToBounds = true
+        liveBadge.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(liveBadge)
+
+        // Channel name
+        channelNameLabel.text = cleanName
+        channelNameLabel.font = .systemFont(ofSize: style == .large ? 22 : 18, weight: .bold)
         channelNameLabel.textColor = .white
+        channelNameLabel.numberOfLines = 1
         channelNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(channelNameLabel)
 
-        nowPlayingLabel.font = .systemFont(ofSize: 20, weight: .regular)
-        nowPlayingLabel.textColor = UIColor(white: 0.5, alpha: 1)
-        nowPlayingLabel.translatesAutoresizingMaskIntoConstraints = false
+        // Program info
+        programLabel.font = .systemFont(ofSize: style == .large ? 18 : 15, weight: .regular)
+        programLabel.textColor = UIColor(white: 0.5, alpha: 1)
+        programLabel.numberOfLines = 1
+        programLabel.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(programLabel)
 
-        let textStack = UIStackView(arrangedSubviews: [channelNameLabel, nowPlayingLabel])
-        textStack.axis = .vertical
-        textStack.spacing = 2
-        textStack.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(textStack)
+        // Variant badge
+        if variantCount > 1 {
+            variantBadge.text = " \(variantCount) "
+            variantBadge.font = .systemFont(ofSize: 13, weight: .bold)
+            variantBadge.textColor = .white
+            variantBadge.backgroundColor = UIColor.white.withAlphaComponent(0.2)
+            variantBadge.layer.cornerRadius = 4
+            variantBadge.clipsToBounds = true
+            variantBadge.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(variantBadge)
 
-        variantBadge.font = .systemFont(ofSize: 16, weight: .bold)
-        variantBadge.textColor = UIColor(white: 0.8, alpha: 1)
-        variantBadge.textAlignment = .center
-        variantBadge.backgroundColor = UIColor.white.withAlphaComponent(0.12)
-        variantBadge.layer.cornerRadius = 10
-        variantBadge.clipsToBounds = true
-        variantBadge.isHidden = true
-        variantBadge.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(variantBadge)
+            NSLayoutConstraint.activate([
+                variantBadge.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+                variantBadge.topAnchor.constraint(equalTo: topAnchor, constant: 12)
+            ])
+        }
 
-        favoriteIcon.image = UIImage(systemName: "star")
-        favoriteIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20)
-        favoriteIcon.tintColor = UIColor(white: 0.3, alpha: 1)
-        favoriteIcon.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(favoriteIcon)
-
-        liveIndicator.backgroundColor = UIColor(red: 1, green: 0.3, blue: 0.3, alpha: 1)
-        liveIndicator.layer.cornerRadius = 5
-        liveIndicator.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(liveIndicator)
+        let thumbHeight: CGFloat = style == .large ? 150 : 100
 
         NSLayoutConstraint.activate([
-            logoContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            logoContainer.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            logoContainer.widthAnchor.constraint(equalToConstant: 60),
-            logoContainer.heightAnchor.constraint(equalToConstant: 60),
+            widthAnchor.constraint(equalToConstant: cardWidth),
+            heightAnchor.constraint(equalToConstant: cardHeight),
 
-            logoImageView.topAnchor.constraint(equalTo: logoContainer.topAnchor),
-            logoImageView.leadingAnchor.constraint(equalTo: logoContainer.leadingAnchor),
-            logoImageView.trailingAnchor.constraint(equalTo: logoContainer.trailingAnchor),
-            logoImageView.bottomAnchor.constraint(equalTo: logoContainer.bottomAnchor),
+            logoImageView.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            logoImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            logoImageView.widthAnchor.constraint(equalToConstant: style == .large ? 48 : 32),
+            logoImageView.heightAnchor.constraint(equalToConstant: style == .large ? 28 : 20),
 
-            badgeLabel.trailingAnchor.constraint(equalTo: logoContainer.trailingAnchor, constant: 2),
-            badgeLabel.bottomAnchor.constraint(equalTo: logoContainer.bottomAnchor, constant: 2),
-            badgeLabel.widthAnchor.constraint(equalToConstant: 24),
-            badgeLabel.heightAnchor.constraint(equalToConstant: 16),
+            thumbnailView.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 10),
+            thumbnailView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            thumbnailView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            thumbnailView.heightAnchor.constraint(equalToConstant: thumbHeight),
 
-            textStack.leadingAnchor.constraint(equalTo: logoContainer.trailingAnchor, constant: 20),
-            textStack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            textStack.trailingAnchor.constraint(lessThanOrEqualTo: variantBadge.leadingAnchor, constant: -12),
+            liveBadge.leadingAnchor.constraint(equalTo: thumbnailView.leadingAnchor, constant: 8),
+            liveBadge.bottomAnchor.constraint(equalTo: thumbnailView.bottomAnchor, constant: -8),
 
-            variantBadge.trailingAnchor.constraint(equalTo: favoriteIcon.leadingAnchor, constant: -16),
-            variantBadge.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            variantBadge.widthAnchor.constraint(greaterThanOrEqualToConstant: 44),
-            variantBadge.heightAnchor.constraint(equalToConstant: 28),
+            channelNameLabel.topAnchor.constraint(equalTo: thumbnailView.bottomAnchor, constant: 8),
+            channelNameLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            channelNameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
 
-            favoriteIcon.trailingAnchor.constraint(equalTo: liveIndicator.leadingAnchor, constant: -20),
-            favoriteIcon.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-
-            liveIndicator.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            liveIndicator.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            liveIndicator.widthAnchor.constraint(equalToConstant: 10),
-            liveIndicator.heightAnchor.constraint(equalToConstant: 10)
+            programLabel.topAnchor.constraint(equalTo: channelNameLabel.bottomAnchor, constant: 2),
+            programLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            programLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12)
         ])
-    }
 
-    func configure(with stream: XtreamStream, cleanName: String, isFavorite: Bool, variantCount: Int = 1, allStreams: [Int: XtreamStream]? = nil) {
-        channelNameLabel.text = cleanName
-        nowPlayingLabel.text = nil
-
-        if variantCount > 1 {
-            variantBadge.text = "  \(variantCount) sources  "
-            variantBadge.isHidden = false
-        } else {
-            variantBadge.isHidden = true
-        }
-
-        favoriteIcon.image = UIImage(systemName: isFavorite ? "star.fill" : "star")
-        favoriteIcon.tintColor = isFavorite ? UIColor(red: 1, green: 0.84, blue: 0, alpha: 1) : UIColor(white: 0.3, alpha: 1)
-
-        // Detect if icon is a generic 4K logo
+        // Load logo
         let iconStr = stream.streamIcon ?? ""
-        let isGenericIcon = iconStr.lowercased().contains("/4k.png") || iconStr.lowercased().contains("logosnew/4k")
-        let isFrom4K = stream.name.uppercased().hasPrefix("4K|") || stream.categoryId == "1673" || stream.categoryId == "1745"
+        let isGenericIcon = iconStr.lowercased().contains("/4k.png")
 
-        badgeLabel.isHidden = !isFrom4K
-
-        loadTask?.cancel()
-        logoImageView.image = UIImage(systemName: "tv")
-        logoImageView.tintColor = UIColor(white: 0.3, alpha: 1)
-
-        if isGenericIcon, let allStreams {
-            // Try to find a matching US channel with a real logo
+        if isGenericIcon, let cache = allStreamsCache {
             let searchName = cleanName.uppercased()
-            let match = allStreams.values.first { s in
-                let sClean = s.name.uppercased()
-                return sClean.contains(searchName) && !sClean.hasPrefix("4K|") &&
-                       s.streamIcon != nil && !s.streamIcon!.lowercased().contains("/4k.png")
-            }
-            if let matchIcon = match?.streamIcon, let iconURL = URL(string: matchIcon) {
+            if let match = cache.values.first(where: { s in
+                let n = s.name.uppercased()
+                return n.contains(searchName) && !n.hasPrefix("4K|") && s.streamIcon != nil && !s.streamIcon!.lowercased().contains("/4k.png")
+            }), let url = URL(string: match.streamIcon!) {
                 loadTask = Task {
-                    let image = await ImageLoader.shared.loadImage(from: iconURL)
-                    if !Task.isCancelled, let image {
-                        logoImageView.image = image
-                        logoImageView.tintColor = nil
-                    }
+                    let img = await ImageLoader.shared.loadImage(from: url)
+                    if !Task.isCancelled, let img { logoImageView.image = img; logoImageView.tintColor = nil }
                 }
             }
-        } else if !iconStr.isEmpty, let iconURL = URL(string: iconStr) {
+        } else if !iconStr.isEmpty, let url = URL(string: iconStr) {
             loadTask = Task {
-                let image = await ImageLoader.shared.loadImage(from: iconURL)
-                if !Task.isCancelled, let image {
-                    logoImageView.image = image
-                    logoImageView.tintColor = nil
-                }
+                let img = await ImageLoader.shared.loadImage(from: url)
+                if !Task.isCancelled, let img { logoImageView.image = img; logoImageView.tintColor = nil }
             }
         }
 
-        // Load EPG - show what's currently on
-        epgTask?.cancel()
+        // Load EPG
         epgTask = Task {
             let program = await XtreamAPI.shared.getCurrentProgram(streamId: stream.streamId)
             guard !Task.isCancelled else { return }
             if let program {
                 var text = program.decodedTitle
-                if let mins = program.minutesRemaining {
-                    text += " · \(mins)m left"
-                }
-                nowPlayingLabel.text = text
-            }
-        }
-    }
-
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        loadTask?.cancel()
-        epgTask?.cancel()
-        logoImageView.image = UIImage(systemName: "tv")
-        logoImageView.tintColor = UIColor(white: 0.3, alpha: 1)
-        nowPlayingLabel.text = nil
-        variantBadge.isHidden = true
-        badgeLabel.isHidden = true
-        onFavoriteToggle = nil
-    }
-
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        coordinator.addCoordinatedAnimations({
-            self.contentView.backgroundColor = self.isFocused ? UIColor.white.withAlphaComponent(0.1) : .clear
-            self.contentView.layer.cornerRadius = 12
-        }, completion: nil)
-    }
-
-    // Long press on select to toggle favorite
-    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        // Play/pause button toggles favorite
-        for press in presses {
-            if press.type == .playPause {
-                onFavoriteToggle?()
-                return
-            }
-        }
-        super.pressesBegan(presses, with: event)
-    }
-}
-
-// MARK: - Recent Channel Button
-
-final class RecentChannelButton: UIButton {
-
-    var onSelect: (() -> Void)?
-
-    private let logoImageView = UIImageView()
-    private let nameLabel = UILabel()
-    private var loadTask: Task<Void, Never>?
-
-    init(stream: XtreamStream, cleanName: String) {
-        super.init(frame: .zero)
-
-        backgroundColor = UIColor(white: 0.12, alpha: 1)
-        layer.cornerRadius = 12
-        clipsToBounds = true
-
-        logoImageView.contentMode = .scaleAspectFit
-        logoImageView.clipsToBounds = true
-        logoImageView.layer.cornerRadius = 6
-        logoImageView.tintColor = UIColor(white: 0.3, alpha: 1)
-        logoImageView.image = UIImage(systemName: "tv")
-        logoImageView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(logoImageView)
-
-        nameLabel.text = cleanName
-        nameLabel.font = .systemFont(ofSize: 18, weight: .semibold)
-        nameLabel.textColor = .white
-        nameLabel.numberOfLines = 1
-        nameLabel.lineBreakMode = .byTruncatingTail
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(nameLabel)
-
-        NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 220),
-            heightAnchor.constraint(equalToConstant: 70),
-
-            logoImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            logoImageView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            logoImageView.widthAnchor.constraint(equalToConstant: 44),
-            logoImageView.heightAnchor.constraint(equalToConstant: 44),
-
-            nameLabel.leadingAnchor.constraint(equalTo: logoImageView.trailingAnchor, constant: 10),
-            nameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-            nameLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
-        ])
-
-        if let iconStr = stream.streamIcon, let iconURL = URL(string: iconStr) {
-            loadTask = Task {
-                let image = await ImageLoader.shared.loadImage(from: iconURL)
-                if !Task.isCancelled, let image {
-                    logoImageView.image = image
-                    logoImageView.tintColor = nil
-                }
+                if let mins = program.minutesRemaining { text += " · \(mins)m" }
+                programLabel.text = text
             }
         }
 
@@ -1059,18 +786,28 @@ final class RecentChannelButton: UIButton {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    @objc private func tapped() {
-        onSelect?()
+    @objc private func tapped() { onSelect?() }
+
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        for press in presses {
+            if press.type == .playPause { onFavorite?(); return }
+        }
+        super.pressesBegan(presses, with: event)
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         coordinator.addCoordinatedAnimations({
             if self.isFocused {
-                self.transform = CGAffineTransform(scaleX: 1.05, y: 1.05)
-                self.backgroundColor = UIColor.white.withAlphaComponent(0.15)
+                self.transform = CGAffineTransform(scaleX: 1.06, y: 1.06)
+                self.layer.shadowColor = UIColor.white.cgColor
+                self.layer.shadowOpacity = 0.2
+                self.layer.shadowRadius = 16
+                self.layer.shadowOffset = .zero
+                self.layer.masksToBounds = false
             } else {
                 self.transform = .identity
-                self.backgroundColor = UIColor(white: 0.12, alpha: 1)
+                self.layer.shadowOpacity = 0
+                self.layer.masksToBounds = true
             }
         }, completion: nil)
     }
