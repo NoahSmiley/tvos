@@ -646,7 +646,7 @@ extension LiveTVViewController: UITableViewDataSource, UITableViewDelegate {
         let group = filteredGroups[indexPath.row]
         let stream = group.primaryStream
         let isFav = favorites.contains(stream.streamId)
-        cell.configure(with: stream, cleanName: group.baseName, isFavorite: isFav, variantCount: group.streams.count)
+        cell.configure(with: stream, cleanName: group.baseName, isFavorite: isFav, variantCount: group.streams.count, allStreams: allStreamsCache)
         cell.onFavoriteToggle = { [weak self] in
             self?.toggleFavorite(streamId: stream.streamId)
         }
@@ -784,6 +784,7 @@ final class XtreamChannelCell: UITableViewCell {
     var onFavoriteToggle: (() -> Void)?
 
     private let logoImageView = UIImageView()
+    private let badgeLabel = UILabel()
     private let channelNameLabel = UILabel()
     private let nowPlayingLabel = UILabel()
     private let variantBadge = UILabel()
@@ -804,12 +805,28 @@ final class XtreamChannelCell: UITableViewCell {
         backgroundColor = .clear
         selectionStyle = .none
 
+        let logoContainer = UIView()
+        logoContainer.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(logoContainer)
+
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.clipsToBounds = true
         logoImageView.layer.cornerRadius = 8
         logoImageView.backgroundColor = UIColor(white: 0.12, alpha: 1)
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(logoImageView)
+        logoContainer.addSubview(logoImageView)
+
+        // 4K badge (hidden by default)
+        badgeLabel.text = "4K"
+        badgeLabel.font = .systemFont(ofSize: 11, weight: .heavy)
+        badgeLabel.textColor = .black
+        badgeLabel.textAlignment = .center
+        badgeLabel.backgroundColor = UIColor(red: 1, green: 0.84, blue: 0, alpha: 1)
+        badgeLabel.layer.cornerRadius = 4
+        badgeLabel.clipsToBounds = true
+        badgeLabel.isHidden = true
+        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+        logoContainer.addSubview(badgeLabel)
 
         channelNameLabel.font = .systemFont(ofSize: 26, weight: .semibold)
         channelNameLabel.textColor = .white
@@ -847,12 +864,22 @@ final class XtreamChannelCell: UITableViewCell {
         contentView.addSubview(liveIndicator)
 
         NSLayoutConstraint.activate([
-            logoImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            logoImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            logoImageView.widthAnchor.constraint(equalToConstant: 60),
-            logoImageView.heightAnchor.constraint(equalToConstant: 60),
+            logoContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            logoContainer.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            logoContainer.widthAnchor.constraint(equalToConstant: 60),
+            logoContainer.heightAnchor.constraint(equalToConstant: 60),
 
-            textStack.leadingAnchor.constraint(equalTo: logoImageView.trailingAnchor, constant: 20),
+            logoImageView.topAnchor.constraint(equalTo: logoContainer.topAnchor),
+            logoImageView.leadingAnchor.constraint(equalTo: logoContainer.leadingAnchor),
+            logoImageView.trailingAnchor.constraint(equalTo: logoContainer.trailingAnchor),
+            logoImageView.bottomAnchor.constraint(equalTo: logoContainer.bottomAnchor),
+
+            badgeLabel.trailingAnchor.constraint(equalTo: logoContainer.trailingAnchor, constant: 2),
+            badgeLabel.bottomAnchor.constraint(equalTo: logoContainer.bottomAnchor, constant: 2),
+            badgeLabel.widthAnchor.constraint(equalToConstant: 24),
+            badgeLabel.heightAnchor.constraint(equalToConstant: 16),
+
+            textStack.leadingAnchor.constraint(equalTo: logoContainer.trailingAnchor, constant: 20),
             textStack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             textStack.trailingAnchor.constraint(lessThanOrEqualTo: variantBadge.leadingAnchor, constant: -12),
 
@@ -871,7 +898,7 @@ final class XtreamChannelCell: UITableViewCell {
         ])
     }
 
-    func configure(with stream: XtreamStream, cleanName: String, isFavorite: Bool, variantCount: Int = 1) {
+    func configure(with stream: XtreamStream, cleanName: String, isFavorite: Bool, variantCount: Int = 1, allStreams: [Int: XtreamStream]? = nil) {
         channelNameLabel.text = cleanName
         nowPlayingLabel.text = nil
 
@@ -885,10 +912,35 @@ final class XtreamChannelCell: UITableViewCell {
         favoriteIcon.image = UIImage(systemName: isFavorite ? "star.fill" : "star")
         favoriteIcon.tintColor = isFavorite ? UIColor(red: 1, green: 0.84, blue: 0, alpha: 1) : UIColor(white: 0.3, alpha: 1)
 
+        // Detect if icon is a generic 4K logo
+        let iconStr = stream.streamIcon ?? ""
+        let isGenericIcon = iconStr.lowercased().contains("/4k.png") || iconStr.lowercased().contains("logosnew/4k")
+        let isFrom4K = stream.name.uppercased().hasPrefix("4K|") || stream.categoryId == "1673" || stream.categoryId == "1745"
+
+        badgeLabel.isHidden = !isFrom4K
+
         loadTask?.cancel()
         logoImageView.image = UIImage(systemName: "tv")
         logoImageView.tintColor = UIColor(white: 0.3, alpha: 1)
-        if let iconStr = stream.streamIcon, let iconURL = URL(string: iconStr) {
+
+        if isGenericIcon, let allStreams {
+            // Try to find a matching US channel with a real logo
+            let searchName = cleanName.uppercased()
+            let match = allStreams.values.first { s in
+                let sClean = s.name.uppercased()
+                return sClean.contains(searchName) && !sClean.hasPrefix("4K|") &&
+                       s.streamIcon != nil && !s.streamIcon!.lowercased().contains("/4k.png")
+            }
+            if let matchIcon = match?.streamIcon, let iconURL = URL(string: matchIcon) {
+                loadTask = Task {
+                    let image = await ImageLoader.shared.loadImage(from: iconURL)
+                    if !Task.isCancelled, let image {
+                        logoImageView.image = image
+                        logoImageView.tintColor = nil
+                    }
+                }
+            }
+        } else if !iconStr.isEmpty, let iconURL = URL(string: iconStr) {
             loadTask = Task {
                 let image = await ImageLoader.shared.loadImage(from: iconURL)
                 if !Task.isCancelled, let image {
@@ -898,7 +950,7 @@ final class XtreamChannelCell: UITableViewCell {
             }
         }
 
-        // Load EPG
+        // Load EPG - show what's currently on
         epgTask?.cancel()
         epgTask = Task {
             let program = await XtreamAPI.shared.getCurrentProgram(streamId: stream.streamId)
@@ -918,8 +970,10 @@ final class XtreamChannelCell: UITableViewCell {
         loadTask?.cancel()
         epgTask?.cancel()
         logoImageView.image = UIImage(systemName: "tv")
+        logoImageView.tintColor = UIColor(white: 0.3, alpha: 1)
         nowPlayingLabel.text = nil
         variantBadge.isHidden = true
+        badgeLabel.isHidden = true
         onFavoriteToggle = nil
     }
 
