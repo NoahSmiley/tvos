@@ -69,7 +69,7 @@ struct XtreamEPGEntry: Codable {
     var minutesRemaining: Int? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        formatter.timeZone = TimeZone.current
+        formatter.timeZone = TimeZone(identifier: "UTC")
         guard let endDate = formatter.date(from: end) else { return nil }
         let remaining = endDate.timeIntervalSince(Date())
         guard remaining > 0 else { return nil }
@@ -223,16 +223,21 @@ final class XtreamAPI {
     func getCurrentProgram(streamId: Int) async -> XtreamEPGEntry? {
         let entries = await getCachedEPG(streamId: streamId)
         let now = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        formatter.timeZone = TimeZone.current
 
         return entries.first { entry in
-            guard let start = formatter.date(from: entry.start),
-                  let end = formatter.date(from: entry.end) else { return false }
+            guard let start = Self.epgDateFormatter.date(from: entry.start),
+                  let end = Self.epgDateFormatter.date(from: entry.end) else { return false }
             return now >= start && now < end
         }
     }
+
+    /// EPG timestamps are in UTC
+    private static let epgDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f
+    }()
 
     // MARK: - Stream URL
 
