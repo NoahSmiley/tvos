@@ -65,6 +65,16 @@ struct XtreamEPGEntry: Codable {
               let str = String(data: data, encoding: .utf8) else { return description }
         return str
     }
+
+    var minutesRemaining: Int? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = TimeZone.current
+        guard let endDate = formatter.date(from: end) else { return nil }
+        let remaining = endDate.timeIntervalSince(Date())
+        guard remaining > 0 else { return nil }
+        return Int(remaining / 60)
+    }
 }
 
 struct XtreamEPGResponse: Codable {
@@ -104,6 +114,10 @@ final class XtreamAPI {
     private let baseURL = "http://line.trxdnscloud.ru"
     private let username = "914f80594b"
     private let password = "32d6ec5d6f"
+
+    // EPG cache: streamId -> (entries, fetchTime)
+    private var epgCache: [Int: (entries: [XtreamEPGEntry], fetched: Date)] = [:]
+    private let epgCacheDuration: TimeInterval = 300 // 5 minutes
 
     private init() {
         let config = URLSessionConfiguration.default
@@ -187,6 +201,37 @@ final class XtreamAPI {
 
         let response: XtreamEPGResponse = try await request(url)
         return response.epgListings
+    }
+
+    /// Gets EPG with caching
+    func getCachedEPG(streamId: Int) async -> [XtreamEPGEntry] {
+        // Check cache
+        if let cached = epgCache[streamId], Date().timeIntervalSince(cached.fetched) < epgCacheDuration {
+            return cached.entries
+        }
+
+        do {
+            let entries = try await getEPG(streamId: streamId)
+            epgCache[streamId] = (entries, Date())
+            return entries
+        } catch {
+            return []
+        }
+    }
+
+    /// Gets the currently airing program for a stream
+    func getCurrentProgram(streamId: Int) async -> XtreamEPGEntry? {
+        let entries = await getCachedEPG(streamId: streamId)
+        let now = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = TimeZone.current
+
+        return entries.first { entry in
+            guard let start = formatter.date(from: entry.start),
+                  let end = formatter.date(from: entry.end) else { return false }
+            return now >= start && now < end
+        }
     }
 
     // MARK: - Stream URL

@@ -33,6 +33,7 @@
 		A1000018 /* HeroBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000019 /* HeroBannerView.swift */; };
 		A1000019 /* LiveTVRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001A /* LiveTVRowView.swift */; };
 		A100001A /* ShimmerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001B /* ShimmerView.swift */; };
+		A100001B /* LiveTVPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001C /* LiveTVPlayerViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +64,7 @@
 		B1000019 /* HeroBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroBannerView.swift; sourceTree = "<group>"; };
 		B100001A /* LiveTVRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVRowView.swift; sourceTree = "<group>"; };
 		B100001B /* ShimmerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerView.swift; sourceTree = "<group>"; };
+		B100001C /* LiveTVPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVPlayerViewController.swift; sourceTree = "<group>"; };
 		C1000001 /* Flicker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flicker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -179,6 +181,7 @@
 			isa = PBXGroup;
 			children = (
 				B1000015 /* PlayerViewController.swift */,
+				B100001C /* LiveTVPlayerViewController.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -285,6 +288,7 @@
 				A1000018 /* HeroBannerView.swift in Sources */,
 				A1000019 /* LiveTVRowView.swift in Sources */,
 				A100001A /* ShimmerView.swift in Sources */,
+				A100001B /* LiveTVPlayerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
