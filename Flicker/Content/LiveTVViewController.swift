@@ -407,23 +407,29 @@ final class LiveTVViewController: UIViewController {
     private func loadEPGForVisibleChannels() {
         epgLoadTask?.cancel()
 
-        // Collect first 30 unique stream IDs across all sections for initial load
+        // Collect recently watched + first channels from each section
         var streamIds: [Int] = []
+
+        // Recently watched first (always load these)
+        for id in recentChannelIds.prefix(10) {
+            if !streamIds.contains(id) { streamIds.append(id) }
+        }
+
+        // Then first ~5 from each section
         for section in categorySections {
-            for stream in section.streams {
-                if streamIds.count >= 30 { break }
+            for stream in section.streams.prefix(8) {
+                if streamIds.count >= 50 { break }
                 if !streamIds.contains(stream.streamId) {
                     streamIds.append(stream.streamId)
                 }
             }
-            if streamIds.count >= 30 { break }
         }
 
         epgLoadTask = Task {
-            // Process 5 at a time
-            for batch in stride(from: 0, to: streamIds.count, by: 5) {
+            // Process 8 at a time
+            for batch in stride(from: 0, to: streamIds.count, by: 8) {
                 guard !Task.isCancelled else { return }
-                let end = min(batch + 5, streamIds.count)
+                let end = min(batch + 8, streamIds.count)
                 let batchIds = Array(streamIds[batch..<end])
 
                 await withTaskGroup(of: (Int, XtreamEPGEntry?).self) { group in
