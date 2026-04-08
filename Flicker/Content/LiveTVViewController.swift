@@ -4,7 +4,6 @@ final class LiveTVViewController: UIViewController {
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
-    private let searchBar = UITextField()
     private var sectionViews: [UIView] = []
 
     // Mapped categories: display name -> category IDs
@@ -89,25 +88,28 @@ final class LiveTVViewController: UIViewController {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         headerRow.addSubview(titleLabel)
 
-        searchBar.placeholder = "Search channels..."
-        searchBar.font = .systemFont(ofSize: 22)
-        searchBar.textColor = .white
-        searchBar.backgroundColor = UIColor(white: 0.12, alpha: 1)
-        searchBar.layer.cornerRadius = 14
-        searchBar.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 20, height: 0))
-        searchBar.leftViewMode = .always
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.addTarget(self, action: #selector(searchChanged), for: .editingChanged)
-        headerRow.addSubview(searchBar)
+        let searchButton = UIButton(type: .system)
+        let searchIcon = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .medium))
+        searchButton.setImage(searchIcon, for: .normal)
+        searchButton.setTitle("  Search channels", for: .normal)
+        searchButton.titleLabel?.font = .systemFont(ofSize: 22, weight: .medium)
+        searchButton.tintColor = UIColor(white: 0.5, alpha: 1)
+        searchButton.backgroundColor = UIColor(white: 0.08, alpha: 1)
+        searchButton.layer.cornerRadius = 16
+        searchButton.contentHorizontalAlignment = .left
+        searchButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
+        searchButton.translatesAutoresizingMaskIntoConstraints = false
+        searchButton.addTarget(self, action: #selector(searchTapped), for: .primaryActionTriggered)
+        headerRow.addSubview(searchButton)
 
         NSLayoutConstraint.activate([
             headerRow.heightAnchor.constraint(equalToConstant: 56),
             titleLabel.leadingAnchor.constraint(equalTo: headerRow.leadingAnchor, constant: 48),
             titleLabel.centerYAnchor.constraint(equalTo: headerRow.centerYAnchor),
-            searchBar.trailingAnchor.constraint(equalTo: headerRow.trailingAnchor, constant: -48),
-            searchBar.centerYAnchor.constraint(equalTo: headerRow.centerYAnchor),
-            searchBar.widthAnchor.constraint(equalToConstant: 380),
-            searchBar.heightAnchor.constraint(equalToConstant: 50)
+            searchButton.trailingAnchor.constraint(equalTo: headerRow.trailingAnchor, constant: -48),
+            searchButton.centerYAnchor.constraint(equalTo: headerRow.centerYAnchor),
+            searchButton.widthAnchor.constraint(equalToConstant: 320),
+            searchButton.heightAnchor.constraint(equalToConstant: 50)
         ])
         contentStack.addArrangedSubview(headerRow)
     }
@@ -520,9 +522,22 @@ final class LiveTVViewController: UIViewController {
 
     // MARK: - Actions
 
-    @objc private func searchChanged() {
-        searchQuery = searchBar.text ?? ""
-        rebuildUI()
+    @objc private func searchTapped() {
+        let alert = UIAlertController(title: "Search Channels", message: nil, preferredStyle: .alert)
+        alert.addTextField { field in
+            field.placeholder = "Channel name..."
+            field.text = self.searchQuery
+        }
+        alert.addAction(UIAlertAction(title: "Search", style: .default) { [weak self] _ in
+            self?.searchQuery = alert.textFields?.first?.text ?? ""
+            self?.rebuildUI()
+        })
+        alert.addAction(UIAlertAction(title: "Clear", style: .destructive) { [weak self] _ in
+            self?.searchQuery = ""
+            self?.rebuildUI()
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
     }
 
     private func playStream(_ stream: XtreamStream, title: String) {
