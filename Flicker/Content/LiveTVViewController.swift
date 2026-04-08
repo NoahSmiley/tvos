@@ -496,7 +496,8 @@ final class LiveTVCard: UIButton {
 
     private let logoImageView = UIImageView()
     private let channelNameLabel = UILabel()
-    private let programLabel = UILabel()
+    private let programTitleLabel = UILabel()
+    private let programInfoLabel = UILabel()
     private let liveBadge = UILabel()
     private var loadTask: Task<Void, Never>?
     private var epgTask: Task<Void, Never>?
@@ -534,20 +535,29 @@ final class LiveTVCard: UIButton {
         liveBadge.translatesAutoresizingMaskIntoConstraints = false
         addSubview(liveBadge)
 
-        // Channel name
+        // Program title (hero text — shows what's on)
+        programTitleLabel.text = cleanName // fallback to channel name until EPG loads
+        programTitleLabel.font = .systemFont(ofSize: 22, weight: .bold)
+        programTitleLabel.textColor = .white
+        programTitleLabel.numberOfLines = 1
+        programTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(programTitleLabel)
+
+        // Program info (time | duration)
+        programInfoLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        programInfoLabel.textColor = UIColor(white: 0.5, alpha: 1)
+        programInfoLabel.numberOfLines = 1
+        programInfoLabel.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(programInfoLabel)
+
+        // Small channel name (only visible if EPG loaded, otherwise the title IS the channel name)
         channelNameLabel.text = cleanName
-        channelNameLabel.font = .systemFont(ofSize: 20, weight: .bold)
-        channelNameLabel.textColor = .white
+        channelNameLabel.font = .systemFont(ofSize: 15, weight: .medium)
+        channelNameLabel.textColor = UIColor(white: 0.4, alpha: 1)
         channelNameLabel.numberOfLines = 1
+        channelNameLabel.isHidden = true // hidden until EPG loads
         channelNameLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(channelNameLabel)
-
-        // Program info
-        programLabel.font = .systemFont(ofSize: 17, weight: .regular)
-        programLabel.textColor = UIColor(white: 0.6, alpha: 1)
-        programLabel.numberOfLines = 1
-        programLabel.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(programLabel)
 
         NSLayoutConstraint.activate([
             widthAnchor.constraint(equalToConstant: 280),
@@ -555,19 +565,22 @@ final class LiveTVCard: UIButton {
 
             logoImageView.centerXAnchor.constraint(equalTo: centerXAnchor),
             logoImageView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -30),
-            logoImageView.widthAnchor.constraint(equalToConstant: 140),
+            logoImageView.widthAnchor.constraint(equalToConstant: 160),
             logoImageView.heightAnchor.constraint(equalToConstant: 100),
 
             liveBadge.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
             liveBadge.topAnchor.constraint(equalTo: topAnchor, constant: 12),
 
-            channelNameLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
-            channelNameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
-            channelNameLabel.bottomAnchor.constraint(equalTo: programLabel.topAnchor, constant: -3),
+            programTitleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            programTitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+            programTitleLabel.bottomAnchor.constraint(equalTo: programInfoLabel.topAnchor, constant: -3),
 
-            programLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
-            programLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
-            programLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14)
+            programInfoLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            programInfoLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+            programInfoLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14),
+
+            channelNameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+            channelNameLabel.topAnchor.constraint(equalTo: topAnchor, constant: 12)
         ])
 
         // Load logo
@@ -586,14 +599,33 @@ final class LiveTVCard: UIButton {
             loadLogo(url)
         }
 
-        // Load EPG
+        // Load EPG — show what's actually playing
         epgTask = Task {
             let program = await XtreamAPI.shared.getCurrentProgram(streamId: stream.streamId)
             guard !Task.isCancelled else { return }
             if let program {
-                var text = program.decodedTitle
-                if let mins = program.minutesRemaining { text += " · \(mins)m" }
-                programLabel.text = text
+                // Show title = the program name
+                programTitleLabel.text = program.decodedTitle
+                // Show channel name in corner since title is now the program
+                channelNameLabel.isHidden = false
+
+                // Build info line: time | duration
+                var infoParts: [String] = []
+                // Format start time
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                formatter.timeZone = TimeZone(identifier: "UTC")
+                if let startDate = formatter.date(from: program.start) {
+                    let displayFmt = DateFormatter()
+                    displayFmt.dateFormat = "h:mma"
+                    displayFmt.amSymbol = "am"
+                    displayFmt.pmSymbol = "pm"
+                    infoParts.append(displayFmt.string(from: startDate))
+                }
+                if let mins = program.minutesRemaining {
+                    infoParts.append("\(mins)m left")
+                }
+                programInfoLabel.text = infoParts.joined(separator: " | ")
             }
         }
 
