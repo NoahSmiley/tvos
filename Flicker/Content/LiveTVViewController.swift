@@ -501,12 +501,20 @@ final class LiveTVCard: UIButton {
     private var loadTask: Task<Void, Never>?
     private var epgTask: Task<Void, Never>?
 
+    private let gradientLayer = CAGradientLayer()
+
     init(stream: XtreamStream, cleanName: String, allStreamsCache: [Int: XtreamStream]) {
         super.init(frame: .zero)
 
         backgroundColor = UIColor(white: 0.1, alpha: 1)
         layer.cornerRadius = 14
         clipsToBounds = true
+
+        // Gradient background (updated when logo loads with dominant color)
+        gradientLayer.colors = [UIColor(white: 0.15, alpha: 1).cgColor, UIColor(white: 0.06, alpha: 1).cgColor]
+        gradientLayer.locations = [0.0, 1.0]
+        gradientLayer.cornerRadius = 14
+        layer.insertSublayer(gradientLayer, at: 0)
 
         // Large logo as the visual content
         logoImageView.contentMode = .scaleAspectFit
@@ -536,7 +544,7 @@ final class LiveTVCard: UIButton {
 
         // Program info
         programLabel.font = .systemFont(ofSize: 17, weight: .regular)
-        programLabel.textColor = UIColor(white: 0.5, alpha: 1)
+        programLabel.textColor = UIColor(white: 0.6, alpha: 1)
         programLabel.numberOfLines = 1
         programLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(programLabel)
@@ -545,13 +553,13 @@ final class LiveTVCard: UIButton {
             widthAnchor.constraint(equalToConstant: 280),
             heightAnchor.constraint(equalToConstant: 240),
 
-            logoImageView.topAnchor.constraint(equalTo: topAnchor, constant: 20),
             logoImageView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            logoImageView.widthAnchor.constraint(equalToConstant: 120),
-            logoImageView.heightAnchor.constraint(equalToConstant: 120),
+            logoImageView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -30),
+            logoImageView.widthAnchor.constraint(equalToConstant: 140),
+            logoImageView.heightAnchor.constraint(equalToConstant: 100),
 
             liveBadge.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            liveBadge.bottomAnchor.constraint(equalTo: channelNameLabel.topAnchor, constant: -10),
+            liveBadge.topAnchor.constraint(equalTo: topAnchor, constant: 12),
 
             channelNameLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
             channelNameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
@@ -600,8 +608,18 @@ final class LiveTVCard: UIButton {
             if !Task.isCancelled, let img {
                 logoImageView.image = img
                 logoImageView.tintColor = nil
+
+                // Extract dominant color for gradient background
+                let color = img.dominantColor ?? UIColor(white: 0.15, alpha: 1)
+                let darkColor = color.withAlphaComponent(0.4)
+                gradientLayer.colors = [darkColor.cgColor, UIColor(white: 0.04, alpha: 1).cgColor]
             }
         }
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer.frame = bounds
     }
 
     @objc private func tapped() { onSelect?() }

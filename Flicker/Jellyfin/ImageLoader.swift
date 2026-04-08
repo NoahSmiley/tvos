@@ -54,3 +54,57 @@ final class ImageLoader {
         cache.removeAllObjects()
     }
 }
+
+// MARK: - Dominant Color Extraction
+
+extension UIImage {
+    /// Extracts the most prominent non-white/non-black color from the image
+    var dominantColor: UIColor? {
+        guard let cgImage = self.cgImage else { return nil }
+
+        let size = CGSize(width: 8, height: 8)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        var rawData = [UInt8](repeating: 0, count: Int(size.width * size.height * 4))
+
+        guard let context = CGContext(
+            data: &rawData,
+            width: Int(size.width),
+            height: Int(size.height),
+            bitsPerComponent: 8,
+            bytesPerRow: Int(size.width) * 4,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+
+        context.draw(cgImage, in: CGRect(origin: .zero, size: size))
+
+        var bestR: CGFloat = 0, bestG: CGFloat = 0, bestB: CGFloat = 0
+        var bestSaturation: CGFloat = 0
+
+        for i in stride(from: 0, to: rawData.count, by: 4) {
+            let r = CGFloat(rawData[i]) / 255.0
+            let g = CGFloat(rawData[i + 1]) / 255.0
+            let b = CGFloat(rawData[i + 2]) / 255.0
+
+            let maxC = max(r, g, b)
+            let minC = min(r, g, b)
+            let saturation = maxC > 0 ? (maxC - minC) / maxC : 0
+            let brightness = maxC
+
+            // Skip very dark, very light, or very desaturated colors
+            if brightness < 0.15 || brightness > 0.9 { continue }
+            if saturation < 0.1 { continue }
+
+            if saturation > bestSaturation {
+                bestSaturation = saturation
+                bestR = r; bestG = g; bestB = b
+            }
+        }
+
+        if bestSaturation > 0.1 {
+            return UIColor(red: bestR, green: bestG, blue: bestB, alpha: 1)
+        }
+
+        return nil
+    }
+}
