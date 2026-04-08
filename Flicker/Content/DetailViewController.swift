@@ -144,13 +144,12 @@ final class DetailViewController: UIViewController {
         spacer.heightAnchor.constraint(equalToConstant: 450).isActive = true
         contentStack.addArrangedSubview(spacer)
 
-        // Logo or title
+        // Logo or title — scaleAspectFit but constrained so no empty space
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.clipsToBounds = true
         logoImageView.isHidden = true
         NSLayoutConstraint.activate([
-            logoImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 450),
-            logoImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 130)
+            logoImageView.heightAnchor.constraint(equalToConstant: 120)
         ])
         contentStack.addArrangedSubview(logoImageView)
 
@@ -266,6 +265,11 @@ final class DetailViewController: UIViewController {
                 logoImageView.image = logo
                 logoImageView.isHidden = false
                 titleLabel.isHidden = true
+
+                // Set width based on actual aspect ratio so view fits tightly (no centering gap)
+                let aspect = logo.size.width / logo.size.height
+                let targetWidth = min(120 * aspect, 450)
+                logoImageView.widthAnchor.constraint(equalToConstant: targetWidth).isActive = true
             }
         }
     }
