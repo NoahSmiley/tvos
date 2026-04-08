@@ -217,13 +217,23 @@ final class JellyfinAPI {
 
     // MARK: - Playback
 
+    // Local Jellyfin URL for streaming (bypasses Cloudflare tunnel for 4K)
+    private var streamBaseURL: URL? {
+        // Use local network when on the same LAN — much faster for 4K
+        if let local = URL(string: "http://192.168.0.159:8096"),
+           serverURL?.host?.contains("athion.me") == true {
+            return local
+        }
+        return serverURL
+    }
+
     /// HLS remux — segments MKV into fMP4 chunks with NO re-encoding.
     /// Full 4K HEVC, Dolby Vision, and Atmos audio preserved.
-    /// This is the primary playback method (same as Aether).
+    /// Uses local network URL when available (same as Aether).
     func getHLSRemuxURL(itemId: String) -> URL? {
-        guard let token = accessToken else { return nil }
-        guard let base = buildURL(path: "Videos/\(itemId)/master.m3u8") else { return nil }
+        guard let token = accessToken, let base = streamBaseURL else { return nil }
         var components = URLComponents(url: base, resolvingAgainstBaseURL: false)
+        components?.path = "/Videos/\(itemId)/master.m3u8"
         components?.queryItems = [
             URLQueryItem(name: "MediaSourceId", value: itemId),
             URLQueryItem(name: "VideoCodec", value: "hevc,h264"),
@@ -234,32 +244,18 @@ final class JellyfinAPI {
             URLQueryItem(name: "TranscodingMaxAudioChannels", value: "8"),
             URLQueryItem(name: "MaxStreamingBitrate", value: "200000000"),
             URLQueryItem(name: "VideoBitrate", value: "200000000"),
-            URLQueryItem(name: "SubtitleMethod", value: "Hls"),
             URLQueryItem(name: "api_key", value: token)
         ]
         return components?.url
     }
 
-    /// Direct play — serves the raw file. Only works for MP4/MOV containers.
-    func getDirectPlayURL(itemId: String) -> URL? {
-        guard let token = accessToken else { return nil }
-        guard let base = buildURL(path: "Videos/\(itemId)/stream.mp4") else { return nil }
-        var components = URLComponents(url: base, resolvingAgainstBaseURL: false)
-        components?.queryItems = [
-            URLQueryItem(name: "Static", value: "true"),
-            URLQueryItem(name: "MediaSourceId", value: itemId),
-            URLQueryItem(name: "api_key", value: token)
-        ]
-        return components?.url
-    }
-
-    /// Returns the best playback URL. Both modes use HLS remux (no re-encoding,
-    /// full 4K HEVC/HDR preserved). Segments into fMP4 chunks for smooth playback.
+    /// Returns the best playback URL. Uses HLS remux (no re-encoding,
+    /// full 4K HEVC/HDR preserved). Streams via local network when available.
     func playbackURL(itemId: String) -> URL? {
         return getHLSRemuxURL(itemId: itemId)
     }
 
-    // Keep for Live TV player fallback
+    // Alias for backward compat
     func getTranscodeURL(itemId: String) -> URL? {
         return getHLSRemuxURL(itemId: itemId)
     }
