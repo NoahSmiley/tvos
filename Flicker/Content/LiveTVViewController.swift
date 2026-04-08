@@ -23,6 +23,8 @@ final class LiveTVViewController: UIViewController {
     private var allStreamsCache: [Int: XtreamStream] = [:]
     private var skeletonView: UIView?
     private var searchQuery = ""
+    private var epgCache: [Int: XtreamEPGEntry] = [:] // streamId -> current program
+    private var epgLoadTask: Task<Void, Never>?
 
     private var favorites: Set<Int> {
         get { Set(UserDefaults.standard.array(forKey: "flickerFavoriteChannels") as? [Int] ?? []) }
@@ -172,6 +174,7 @@ final class LiveTVViewController: UIViewController {
                 removeSkeleton()
                 rebuildUI()
                 refreshRecentRow()
+                loadEPGForVisibleChannels()
             } catch {
                 removeSkeleton()
             }
@@ -399,6 +402,62 @@ final class LiveTVViewController: UIViewController {
         if !categorySections.isEmpty { rebuildUI() }
     }
 
+    // MARK: - Batch EPG Loading
+
+    private func loadEPGForVisibleChannels() {
+        epgLoadTask?.cancel()
+
+        // Collect first 30 unique stream IDs across all sections for initial load
+        var streamIds: [Int] = []
+        for section in categorySections {
+            for stream in section.streams {
+                if streamIds.count >= 30 { break }
+                if !streamIds.contains(stream.streamId) {
+                    streamIds.append(stream.streamId)
+                }
+            }
+            if streamIds.count >= 30 { break }
+        }
+
+        epgLoadTask = Task {
+            // Process 5 at a time
+            for batch in stride(from: 0, to: streamIds.count, by: 5) {
+                guard !Task.isCancelled else { return }
+                let end = min(batch + 5, streamIds.count)
+                let batchIds = Array(streamIds[batch..<end])
+
+                await withTaskGroup(of: (Int, XtreamEPGEntry?).self) { group in
+                    for id in batchIds {
+                        group.addTask {
+                            let program = await XtreamAPI.shared.getCurrentProgram(streamId: id)
+                            return (id, program)
+                        }
+                    }
+                    for await (id, program) in group {
+                        if let program {
+                            epgCache[id] = program
+                        }
+                    }
+                }
+
+                // Update cards on main thread after each batch
+                guard !Task.isCancelled else { return }
+                notifyCardsOfEPGUpdate()
+            }
+        }
+    }
+
+    private func notifyCardsOfEPGUpdate() {
+        // Walk all cards and update any that have EPG data now
+        func updateCards(in view: UIView) {
+            if let card = view as? LiveTVCard {
+                card.updateEPG(from: epgCache)
+            }
+            for sub in view.subviews { updateCards(in: sub) }
+        }
+        updateCards(in: contentStack)
+    }
+
     // MARK: - Actions
 
     @objc private func searchChanged() {
@@ -503,17 +562,20 @@ final class LiveTVCard: UIButton {
     var onSelect: (() -> Void)?
     var onFavorite: (() -> Void)?
 
+    let streamId: Int
+    private let cleanName: String
     private let logoImageView = UIImageView()
     private let channelNameLabel = UILabel()
     private let programTitleLabel = UILabel()
     private let programInfoLabel = UILabel()
     private let liveBadge = UILabel()
     private var loadTask: Task<Void, Never>?
-    private var epgTask: Task<Void, Never>?
 
     private let gradientLayer = CAGradientLayer()
 
     init(stream: XtreamStream, cleanName: String, allStreamsCache: [Int: XtreamStream]) {
+        self.streamId = stream.streamId
+        self.cleanName = cleanName
         super.init(frame: .zero)
 
         backgroundColor = UIColor(white: 0.1, alpha: 1)
@@ -608,36 +670,6 @@ final class LiveTVCard: UIButton {
             loadLogo(url)
         }
 
-        // Load EPG — show what's actually playing
-        epgTask = Task {
-            let program = await XtreamAPI.shared.getCurrentProgram(streamId: stream.streamId)
-            guard !Task.isCancelled else { return }
-            if let program {
-                // Show title = the program name
-                programTitleLabel.text = program.decodedTitle
-                // Show channel name in corner since title is now the program
-                channelNameLabel.isHidden = false
-
-                // Build info line: time | duration
-                var infoParts: [String] = []
-                // Format start time
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                formatter.timeZone = TimeZone(identifier: "UTC")
-                if let startDate = formatter.date(from: program.start) {
-                    let displayFmt = DateFormatter()
-                    displayFmt.dateFormat = "h:mma"
-                    displayFmt.amSymbol = "am"
-                    displayFmt.pmSymbol = "pm"
-                    infoParts.append(displayFmt.string(from: startDate))
-                }
-                if let mins = program.minutesRemaining {
-                    infoParts.append("\(mins)m left")
-                }
-                programInfoLabel.text = infoParts.joined(separator: " | ")
-            }
-        }
-
         addTarget(self, action: #selector(tapped), for: .primaryActionTriggered)
     }
 
@@ -647,8 +679,14 @@ final class LiveTVCard: UIButton {
         loadTask = Task {
             let img = await ImageLoader.shared.loadImage(from: url)
             if !Task.isCancelled, let img {
-                logoImageView.image = img
-                logoImageView.tintColor = nil
+                // Check if image is very dark — if so, use it as template to render white
+                if img.isDark {
+                    logoImageView.image = img.withRenderingMode(.alwaysTemplate)
+                    logoImageView.tintColor = .white
+                } else {
+                    logoImageView.image = img
+                    logoImageView.tintColor = nil
+                }
 
                 // Extract dominant color for gradient background
                 let color = img.dominantColor ?? UIColor(white: 0.15, alpha: 1)
@@ -656,6 +694,32 @@ final class LiveTVCard: UIButton {
                 gradientLayer.colors = [darkColor.cgColor, UIColor(white: 0.04, alpha: 1).cgColor]
             }
         }
+    }
+
+    /// Called by the VC after batch EPG load completes
+    func updateEPG(from cache: [Int: XtreamEPGEntry]) {
+        guard let program = cache[streamId] else { return }
+
+        // Show the program name as the hero title
+        programTitleLabel.text = program.decodedTitle
+        channelNameLabel.isHidden = false
+
+        // Build info line
+        var infoParts: [String] = []
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        if let startDate = formatter.date(from: program.start) {
+            let displayFmt = DateFormatter()
+            displayFmt.dateFormat = "h:mma"
+            displayFmt.amSymbol = "am"
+            displayFmt.pmSymbol = "pm"
+            infoParts.append(displayFmt.string(from: startDate))
+        }
+        if let mins = program.minutesRemaining {
+            infoParts.append("\(mins)m left")
+        }
+        programInfoLabel.text = infoParts.joined(separator: " | ")
     }
 
     override func layoutSubviews() {
