@@ -193,10 +193,12 @@ final class XtreamAPI {
     // MARK: - EPG
 
     func getEPG(streamId: Int) async throws -> [XtreamEPGEntry] {
-        let extraParams = [URLQueryItem(name: "stream_id", value: "\(streamId)")]
+        let extraParams = [
+            URLQueryItem(name: "stream_id", value: "\(streamId)"),
+            URLQueryItem(name: "limit", value: "4")
+        ]
 
-        // Use get_simple_data_table which includes current + past + future programs
-        guard let url = apiURL(action: "get_simple_data_table", extraParams: extraParams) else {
+        guard let url = apiURL(action: "get_short_epg", extraParams: extraParams) else {
             throw XtreamError.invalidURL
         }
 

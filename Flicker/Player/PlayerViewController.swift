@@ -40,6 +40,7 @@ final class PlayerViewController: AVPlayerViewController {
 
         let asset = AVURLAsset(url: streamURL)
         let playerItem = AVPlayerItem(asset: asset)
+        playerItem.preferredForwardBufferDuration = 5 // Start playing sooner
 
         // Observe status for errors
         statusObserver = playerItem.observe(\.status, options: [.new]) { [weak self] item, _ in
@@ -55,13 +56,8 @@ final class PlayerViewController: AVPlayerViewController {
             }
         }
 
-        errorObserver = playerItem.observe(\.error, options: [.new]) { _, change in
-            if let error = change.newValue as? Error {
-                print("[Player] Error: \(error.localizedDescription)")
-            }
-        }
-
         let avPlayer = AVPlayer(playerItem: playerItem)
+        avPlayer.automaticallyWaitsToMinimizeStalling = false // Play ASAP
         player = avPlayer
 
         // Set metadata for the native tvOS player UI

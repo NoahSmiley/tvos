@@ -52,7 +52,7 @@ final class LiveTVViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        refreshRecentRow()
+        if !categorySections.isEmpty { rebuildUI() }
     }
 
     // MARK: - Layout
@@ -160,21 +160,74 @@ final class LiveTVViewController: UIViewController {
     private func loadAllData() {
         Task {
             do {
-                async let cats = XtreamAPI.shared.getCategories()
-                async let streams = XtreamAPI.shared.getLiveStreams()
+                // Step 1: Load categories (fast)
+                let allCats = try await XtreamAPI.shared.getCategories()
 
-                let allCats = try await cats
-                let allStreams = try await streams
+                // Step 2: Map categories to our sections
+                var sectionCatIds: [(name: String, catIds: [String])] = []
+                for section in Self.sectionOrder {
+                    var ids: [String] = []
+                    for cat in allCats {
+                        let catName = cat.categoryName.uppercased()
+                        if section.keywords.contains(where: { catName.contains($0) }) &&
+                           (catName.hasPrefix("US") || catName.contains("4K")) {
+                            ids.append(cat.categoryId)
+                        }
+                    }
+                    if !ids.isEmpty {
+                        sectionCatIds.append((name: section.name, catIds: ids))
+                    }
+                }
 
-                // Cache all streams
-                for s in allStreams { allStreamsCache[s.streamId] = s }
-
-                // Build sections by mapping categories to our named sections
-                buildSections(categories: allCats, streams: allStreams)
                 removeSkeleton()
-                rebuildUI()
-                refreshRecentRow()
-                loadEPGForVisibleChannels()
+
+                // Step 3: Load each section's streams in parallel, show each as it arrives
+                await withTaskGroup(of: (String, [XtreamStream]).self) { group in
+                    for section in sectionCatIds {
+                        group.addTask {
+                            var allStreams: [XtreamStream] = []
+                            for catId in section.catIds {
+                                if let streams = try? await XtreamAPI.shared.getLiveStreams(categoryId: catId) {
+                                    allStreams.append(contentsOf: streams)
+                                }
+                            }
+                            return (section.name, allStreams)
+                        }
+                    }
+
+                    for await (sectionName, streams) in group {
+                        // Filter and cache
+                        let junkPatterns = ["#####", "NO SIGNAL", "NO EVENT", "EVENT ONLY", "OFF AIR",
+                                           "[OFFLINE]", "NOT AVAILABLE", "COMING SOON"]
+                        let filtered = streams.filter { stream in
+                            let upper = stream.name.uppercased()
+                            if junkPatterns.contains(where: { upper.contains($0) }) { return false }
+                            if upper.contains("|") {
+                                let prefix = upper.components(separatedBy: "|").first?.trimmingCharacters(in: .whitespaces) ?? ""
+                                if prefix != "US" && prefix != "4K" && !prefix.isEmpty { return false }
+                            }
+                            return true
+                        }
+
+                        for s in filtered { allStreamsCache[s.streamId] = s }
+
+                        let grouped = groupStreams(filtered)
+                        let deduped = grouped.map { $0.primaryStream }
+
+                        if !deduped.isEmpty {
+                            categorySections.append((name: sectionName, streams: deduped))
+                            // Re-sort sections to match our preferred order
+                            let order = Self.sectionOrder.map { $0.name }
+                            categorySections.sort { a, b in
+                                (order.firstIndex(of: a.name) ?? 99) < (order.firstIndex(of: b.name) ?? 99)
+                            }
+                            rebuildUI()
+                        }
+                    }
+                }
+
+                // Step 4: Load EPG for all channels
+                loadEPGForAllChannels()
             } catch {
                 removeSkeleton()
             }
@@ -404,21 +457,16 @@ final class LiveTVViewController: UIViewController {
 
     // MARK: - Batch EPG Loading
 
-    private func loadEPGForVisibleChannels() {
+    private func loadEPGForAllChannels() {
         epgLoadTask?.cancel()
 
-        // Collect recently watched + first channels from each section
+        // Collect ALL unique stream IDs — recently watched first, then all sections
         var streamIds: [Int] = []
-
-        // Recently watched first (always load these)
-        for id in recentChannelIds.prefix(10) {
+        for id in recentChannelIds {
             if !streamIds.contains(id) { streamIds.append(id) }
         }
-
-        // Then first ~5 from each section
         for section in categorySections {
-            for stream in section.streams.prefix(8) {
-                if streamIds.count >= 50 { break }
+            for stream in section.streams {
                 if !streamIds.contains(stream.streamId) {
                     streamIds.append(stream.streamId)
                 }
@@ -426,10 +474,10 @@ final class LiveTVViewController: UIViewController {
         }
 
         epgLoadTask = Task {
-            // Process 8 at a time
-            for batch in stride(from: 0, to: streamIds.count, by: 8) {
+            // Process 10 at a time — aggressive but the API can handle it
+            for batch in stride(from: 0, to: streamIds.count, by: 10) {
                 guard !Task.isCancelled else { return }
-                let end = min(batch + 8, streamIds.count)
+                let end = min(batch + 10, streamIds.count)
                 let batchIds = Array(streamIds[batch..<end])
 
                 await withTaskGroup(of: (Int, XtreamEPGEntry?).self) { group in
@@ -446,7 +494,7 @@ final class LiveTVViewController: UIViewController {
                     }
                 }
 
-                // Update cards on main thread after each batch
+                // Update cards after each batch
                 guard !Task.isCancelled else { return }
                 notifyCardsOfEPGUpdate()
             }
@@ -454,14 +502,20 @@ final class LiveTVViewController: UIViewController {
     }
 
     private func notifyCardsOfEPGUpdate() {
-        // Walk all cards and update any that have EPG data now
-        func updateCards(in view: UIView) {
-            if let card = view as? LiveTVCard {
-                card.updateEPG(from: epgCache)
+        Task { @MainActor in
+            var count = 0
+            func updateCards(in view: UIView) {
+                if let card = view as? LiveTVCard {
+                    card.updateEPG(from: epgCache)
+                    count += 1
+                }
+                for sub in view.subviews { updateCards(in: sub) }
             }
-            for sub in view.subviews { updateCards(in: sub) }
+            updateCards(in: self.view)
+            if count > 0 {
+                print("[LiveTV] Updated EPG on \(count) cards, cache has \(epgCache.count) entries")
+            }
         }
-        updateCards(in: contentStack)
     }
 
     // MARK: - Actions

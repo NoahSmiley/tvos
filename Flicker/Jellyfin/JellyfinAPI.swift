@@ -217,12 +217,15 @@ final class JellyfinAPI {
 
     // MARK: - Playback
 
+    /// Direct stream — remuxes to MP4 container without re-encoding video.
+    /// Preserves full 4K HEVC quality in an Apple TV compatible container.
     func getStreamURL(itemId: String) -> URL? {
         guard let token = accessToken else { return nil }
-        guard let base = buildURL(path: "Videos/\(itemId)/stream") else { return nil }
+        guard let base = buildURL(path: "Videos/\(itemId)/stream.mp4") else { return nil }
         var components = URLComponents(url: base, resolvingAgainstBaseURL: false)
         components?.queryItems = [
             URLQueryItem(name: "Static", value: "true"),
+            URLQueryItem(name: "MediaSourceId", value: itemId),
             URLQueryItem(name: "api_key", value: token)
         ]
         return components?.url
@@ -249,12 +252,15 @@ final class JellyfinAPI {
     }
 
     /// Returns the best playback URL based on quality setting.
-    /// Maximum = direct stream (full quality), Auto = HLS transcode (compatibility).
+    /// Maximum = direct stream (remuxed MP4, full 4K HEVC, no re-encode).
+    /// Auto = direct stream first, HLS transcode as fallback.
     func playbackURL(itemId: String) -> URL? {
         if PlaybackQuality.current == .maximum {
-            return getStreamURL(itemId: itemId) ?? getTranscodeURL(itemId: itemId)
+            // Full quality: remux to MP4 (no re-encoding, preserves 4K HEVC/HDR)
+            return getStreamURL(itemId: itemId)
         } else {
-            return getTranscodeURL(itemId: itemId) ?? getStreamURL(itemId: itemId)
+            // Auto: try direct stream first (fast + quality), transcode fallback
+            return getStreamURL(itemId: itemId) ?? getTranscodeURL(itemId: itemId)
         }
     }
 
