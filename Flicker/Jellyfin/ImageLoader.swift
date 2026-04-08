@@ -108,11 +108,11 @@ extension UIImage {
         return nil
     }
 
-    /// Returns true if the image is mostly dark (for inverting dark logos to white)
+    /// Returns true if the image is mostly dark with no color (pure black logos on transparent)
     var isDark: Bool {
         guard let cgImage = self.cgImage else { return false }
 
-        let size = CGSize(width: 8, height: 8)
+        let size = CGSize(width: 10, height: 10)
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         var rawData = [UInt8](repeating: 0, count: Int(size.width * size.height * 4))
 
@@ -129,19 +129,27 @@ extension UIImage {
         context.draw(cgImage, in: CGRect(origin: .zero, size: size))
 
         var totalBrightness: CGFloat = 0
+        var maxSaturation: CGFloat = 0
         var opaquePixels: CGFloat = 0
 
         for i in stride(from: 0, to: rawData.count, by: 4) {
             let a = CGFloat(rawData[i + 3]) / 255.0
-            if a < 0.3 { continue } // skip transparent pixels
+            if a < 0.3 { continue }
             let r = CGFloat(rawData[i]) / 255.0
             let g = CGFloat(rawData[i + 1]) / 255.0
             let b = CGFloat(rawData[i + 2]) / 255.0
             totalBrightness += (r * 0.299 + g * 0.587 + b * 0.114)
+            let maxC = max(r, g, b)
+            let minC = min(r, g, b)
+            if maxC > 0 { maxSaturation = max(maxSaturation, (maxC - minC) / maxC) }
             opaquePixels += 1
         }
 
         guard opaquePixels > 0 else { return false }
-        return (totalBrightness / opaquePixels) < 0.25
+        let avgBrightness = totalBrightness / opaquePixels
+
+        // Only invert if truly dark AND has no color (pure black text logos)
+        // Logos like ESPN (red on transparent) have saturation and should NOT be inverted
+        return avgBrightness < 0.2 && maxSaturation < 0.3
     }
 }

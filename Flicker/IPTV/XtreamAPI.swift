@@ -45,8 +45,8 @@ struct XtreamEPGEntry: Codable {
     let start: String
     let end: String
     let description: String
-    let channelId: String
-    let streamId: String
+    let channelId: String?
+    let streamId: String?
 
     enum CodingKeys: String, CodingKey {
         case id, title, start, end, description
