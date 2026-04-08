@@ -57,7 +57,7 @@ final class LiveTVViewController: UIViewController {
     override init(nibName: String?, bundle: Bundle?) {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
+        layout.itemSize = CGSize(width: 240, height: 50)
         layout.minimumInteritemSpacing = 12
         layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 24)
         categoryCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -297,13 +297,18 @@ final class LiveTVViewController: UIViewController {
                 buildDisplayCategories()
                 categoryCollectionView.reloadData()
 
-                // Load all channels for the first real category or favorites
+                // Default to Favorites if any, otherwise first US Entertainment category
                 if !favorites.isEmpty {
-                    selectedCategoryIndex = 0 // Favorites
+                    selectedCategoryIndex = 0
                     loadFavorites()
-                } else if let first = allCategories.first {
-                    selectedCategoryIndex = 2 // First real category (after Favorites + All)
-                    loadStreams(categoryId: first.categoryId)
+                } else if let entIdx = displayCategories.firstIndex(where: {
+                    $0.name.uppercased().contains("ENTERTAINMENT")
+                }) {
+                    selectedCategoryIndex = entIdx
+                    loadStreams(categoryId: displayCategories[entIdx].id)
+                } else if displayCategories.count > 2 {
+                    selectedCategoryIndex = 2
+                    loadStreams(categoryId: displayCategories[2].id)
                 }
             } catch {
                 removeSkeleton()
@@ -314,9 +319,16 @@ final class LiveTVViewController: UIViewController {
 
     private func buildDisplayCategories() {
         displayCategories = [CategoryItem.favorites, CategoryItem.all]
-        // Clean up category names and filter US-relevant ones
-        for cat in allCategories {
+
+        // Filter to US categories and a few universal ones (4K, etc.)
+        let usCategories = allCategories.filter { cat in
+            let name = cat.categoryName.uppercased()
+            return name.hasPrefix("US|") || name.hasPrefix("US |") || name.contains("4K")
+        }
+
+        for cat in usCategories {
             let cleanName = cleanCategoryName(cat.categoryName)
+            guard !cleanName.isEmpty else { continue }
             displayCategories.append(CategoryItem(id: cat.categoryId, name: cleanName, isSpecial: false))
         }
     }
@@ -379,8 +391,13 @@ final class LiveTVViewController: UIViewController {
     private func applyFilter() {
         var result = allStreams
 
-        // Filter out separator rows (names like "##### ... #####")
-        result = result.filter { !$0.name.hasPrefix("#") }
+        // Filter out separator rows and junk channels
+        let junkPatterns = ["#####", "NO SIGNAL", "NO EVENT", "EVENT ONLY", "OFF AIR",
+                           "[OFFLINE]", "NOT AVAILABLE", "COMING SOON"]
+        result = result.filter { stream in
+            let upper = stream.name.uppercased()
+            return !junkPatterns.contains(where: { upper.contains($0) })
+        }
 
         // Apply search
         if !searchQuery.isEmpty {
@@ -403,7 +420,7 @@ final class LiveTVViewController: UIViewController {
         filteredGroups = groupOrder.compactMap { base in
             guard let streams = groupDict[base] else { return nil }
             let icon = streams.first(where: { $0.streamIcon != nil })?.streamIcon
-            return ChannelGroup(baseName: base, streams: streams, icon: icon)
+            return ChannelGroup(baseName: titleCase(base), streams: streams, icon: icon)
         }
 
         channelTableView.reloadData()
@@ -481,11 +498,13 @@ final class LiveTVViewController: UIViewController {
                 clean = String(clean[pipeRange.upperBound...])
             }
         }
-
-        // Remove quality tags
-        clean = clean.replacingOccurrences(of: " HD", with: "")
-        clean = clean.replacingOccurrences(of: " FHD", with: "")
-        clean = clean.replacingOccurrences(of: " SD", with: "")
+        // Also handle "US|" without space
+        if let pipeRange = clean.range(of: "|") {
+            let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+            if prefix.count <= 4 && prefix == prefix.uppercased() {
+                clean = String(clean[pipeRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+            }
+        }
 
         // Remove Unicode superscript junk
         let junkChars = CharacterSet(charactersIn: "ᴴᴰᴿᴬᵂ⁶⁰ᶠᵖˢᶜᶦᵗʸ")
@@ -499,7 +518,30 @@ final class LiveTVViewController: UIViewController {
             clean = String(clean.dropLast()).trimmingCharacters(in: .whitespaces)
         }
 
+        // Title case: "SKY SPORTS F1" -> "Sky Sports F1"
+        clean = titleCase(clean)
+
         return clean.isEmpty ? name : clean
+    }
+
+    private func titleCase(_ str: String) -> String {
+        // Only convert if it's ALL CAPS
+        guard str == str.uppercased(), str.count > 3 else { return str }
+
+        return str.split(separator: " ").map { word in
+            let w = String(word)
+            // Keep short acronyms uppercase (TV, HD, F1, ESPN, etc.)
+            if w.count <= 3 || (w == w.uppercased() && w.rangeOfCharacter(from: .decimalDigits) != nil && w.count <= 4) {
+                return w
+            }
+            // Known acronyms to keep uppercase
+            let acronyms: Set<String> = ["ESPN", "NBC", "CBS", "ABC", "FOX", "CNN", "MSNBC", "TNT",
+                                          "TBS", "AMC", "BET", "MTV", "VH1", "USA", "HGTV", "NESN",
+                                          "CNBC", "CSPAN", "BBC", "HBO", "MAX", "FX", "FXX"]
+            if acronyms.contains(w) { return w }
+
+            return w.prefix(1).uppercased() + w.dropFirst().lowercased()
+        }.joined(separator: " ")
     }
 
     private func cleanCategoryName(_ name: String) -> String {
@@ -693,9 +735,8 @@ final class CategoryPillCell: UICollectionViewCell {
         NSLayoutConstraint.activate([
             stack.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             stack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            stack.leadingAnchor.constraint(greaterThanOrEqualTo: contentView.leadingAnchor, constant: 20),
-            stack.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -20),
-            contentView.widthAnchor.constraint(greaterThanOrEqualToConstant: 100)
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: contentView.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -16)
         ])
     }
 
