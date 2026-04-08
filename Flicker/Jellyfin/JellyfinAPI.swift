@@ -227,14 +227,20 @@ final class JellyfinAPI {
         return serverURL
     }
 
-    /// HLS remux — segments MKV into fMP4 chunks with NO re-encoding.
-    /// Full 4K HEVC, Dolby Vision, and Atmos audio preserved.
-    /// Uses local network URL when available (same as Aether).
+    /// HLS remux/transcode — adapts quality based on network.
+    /// Local: full 4K remux (no re-encoding). Remote: respects quality setting.
     func getHLSRemuxURL(itemId: String) -> URL? {
         guard let token = accessToken, let base = streamBaseURL else { return nil }
+
+        let isLocal = base.host?.contains("192.168") == true || base.host == "localhost"
+        let quality = RemoteStreamQuality.current
+
+        // Local = always full quality. Remote = use quality setting.
+        let bitrate = isLocal ? 200_000_000 : quality.maxBitrate
+
         var components = URLComponents(url: base, resolvingAgainstBaseURL: false)
         components?.path = "/Videos/\(itemId)/master.m3u8"
-        components?.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "MediaSourceId", value: itemId),
             URLQueryItem(name: "VideoCodec", value: "hevc,h264"),
             URLQueryItem(name: "AudioCodec", value: "eac3,ac3,aac"),
@@ -242,15 +248,21 @@ final class JellyfinAPI {
             URLQueryItem(name: "SegmentContainer", value: "mp4"),
             URLQueryItem(name: "SegmentLength", value: "6"),
             URLQueryItem(name: "TranscodingMaxAudioChannels", value: "8"),
-            URLQueryItem(name: "MaxStreamingBitrate", value: "200000000"),
-            URLQueryItem(name: "VideoBitrate", value: "200000000"),
+            URLQueryItem(name: "MaxStreamingBitrate", value: "\(bitrate)"),
+            URLQueryItem(name: "VideoBitrate", value: "\(bitrate)"),
             URLQueryItem(name: "api_key", value: token)
         ]
+
+        // For remote with lower quality, add max width to trigger transcode
+        if !isLocal, let maxWidth = quality.maxWidth {
+            queryItems.append(URLQueryItem(name: "MaxWidth", value: "\(maxWidth)"))
+        }
+
+        components?.queryItems = queryItems
         return components?.url
     }
 
-    /// Returns the best playback URL. Uses HLS remux (no re-encoding,
-    /// full 4K HEVC/HDR preserved). Streams via local network when available.
+    /// Returns the best playback URL. Local = full 4K remux. Remote = adaptive quality.
     func playbackURL(itemId: String) -> URL? {
         return getHLSRemuxURL(itemId: itemId)
     }
