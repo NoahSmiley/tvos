@@ -436,6 +436,7 @@ final class LiveTVViewController: UIViewController {
 
     private func cleanChannelName(_ name: String) -> String {
         var clean = name
+        // Remove country prefix
         if let pipeRange = clean.range(of: "| ") {
             let prefix = String(clean[clean.startIndex..<pipeRange.lowerBound])
             if prefix.count <= 4 { clean = String(clean[pipeRange.upperBound...]) }
@@ -446,6 +447,14 @@ final class LiveTVViewController: UIViewController {
                 clean = String(clean[pipeRange.upperBound...]).trimmingCharacters(in: .whitespaces)
             }
         }
+        // Strip quality suffixes
+        let suffixes = [" UHD", " FHD", " HD", " SD"]
+        for suffix in suffixes {
+            if clean.uppercased().hasSuffix(suffix) {
+                clean = String(clean.dropLast(suffix.count))
+            }
+        }
+        // Remove Unicode superscript junk
         let junkChars = CharacterSet(charactersIn: "ᴴᴰᴿᴬᵂ⁶⁰ᶠᵖˢᶜᶦᵗʸ")
         clean = String(clean.unicodeScalars.filter { !junkChars.contains($0) })
         clean = clean.trimmingCharacters(in: .whitespaces)
