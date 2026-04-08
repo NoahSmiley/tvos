@@ -1,0 +1,419 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001 /* AppDelegate.swift */; };
+		A1000002 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* RootViewController.swift */; };
+		A1000003 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003 /* SidebarDestination.swift */; };
+		A1000004 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004 /* SidebarViewController.swift */; };
+		A1000005 /* SidebarMenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005 /* SidebarMenuButton.swift */; };
+		A1000006 /* JellyfinModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006 /* JellyfinModels.swift */; };
+		A1000007 /* JellyfinAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007 /* JellyfinAPI.swift */; };
+		A1000008 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008 /* ImageLoader.swift */; };
+		A1000009 /* IPTVModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000009 /* IPTVModels.swift */; };
+		A100000A /* M3UParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000A /* M3UParser.swift */; };
+		A100000B /* IPTVManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000B /* IPTVManager.swift */; };
+		A100000C /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000C /* HomeViewController.swift */; };
+		A100000D /* MediaRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000D /* MediaRowView.swift */; };
+		A100000E /* MediaCardCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000E /* MediaCardCell.swift */; };
+		A100000F /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000F /* LibraryViewController.swift */; };
+		A1000010 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010 /* DetailViewController.swift */; };
+		A1000011 /* EpisodesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000011 /* EpisodesViewController.swift */; };
+		A1000012 /* LiveTVViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000012 /* LiveTVViewController.swift */; };
+		A1000013 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000013 /* SearchViewController.swift */; };
+		A1000014 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000014 /* SettingsViewController.swift */; };
+		A1000015 /* PlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000015 /* PlayerViewController.swift */; };
+		A1000016 /* XtreamAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000017 /* XtreamAPI.swift */; };
+		A1000017 /* ThumbnailCardCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000018 /* ThumbnailCardCell.swift */; };
+		A1000018 /* HeroBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000019 /* HeroBannerView.swift */; };
+		A1000019 /* LiveTVRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001A /* LiveTVRowView.swift */; };
+		A100001A /* ShimmerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001B /* ShimmerView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B1000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B1000002 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		B1000003 /* SidebarDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDestination.swift; sourceTree = "<group>"; };
+		B1000004 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
+		B1000005 /* SidebarMenuButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarMenuButton.swift; sourceTree = "<group>"; };
+		B1000006 /* JellyfinModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinModels.swift; sourceTree = "<group>"; };
+		B1000007 /* JellyfinAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinAPI.swift; sourceTree = "<group>"; };
+		B1000008 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
+		B1000009 /* IPTVModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPTVModels.swift; sourceTree = "<group>"; };
+		B100000A /* M3UParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3UParser.swift; sourceTree = "<group>"; };
+		B100000B /* IPTVManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPTVManager.swift; sourceTree = "<group>"; };
+		B100000C /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		B100000D /* MediaRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRowView.swift; sourceTree = "<group>"; };
+		B100000E /* MediaCardCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCardCell.swift; sourceTree = "<group>"; };
+		B100000F /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
+		B1000010 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		B1000011 /* EpisodesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodesViewController.swift; sourceTree = "<group>"; };
+		B1000012 /* LiveTVViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVViewController.swift; sourceTree = "<group>"; };
+		B1000013 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
+		B1000014 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		B1000015 /* PlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewController.swift; sourceTree = "<group>"; };
+		B1000016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1000017 /* XtreamAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamAPI.swift; sourceTree = "<group>"; };
+		B1000018 /* ThumbnailCardCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCardCell.swift; sourceTree = "<group>"; };
+		B1000019 /* HeroBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroBannerView.swift; sourceTree = "<group>"; };
+		B100001A /* LiveTVRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVRowView.swift; sourceTree = "<group>"; };
+		B100001B /* ShimmerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerView.swift; sourceTree = "<group>"; };
+		C1000001 /* Flicker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flicker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D1000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E1000001 = {
+			isa = PBXGroup;
+			children = (
+				E1000002 /* Flicker */,
+				E1000009 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E1000002 /* Flicker */ = {
+			isa = PBXGroup;
+			children = (
+				E1000003 /* App */,
+				E1000004 /* Models */,
+				E1000005 /* Sidebar */,
+				E1000006 /* Jellyfin */,
+				E1000007 /* IPTV */,
+				E1000008 /* Content */,
+				E100000A /* Player */,
+				E100000B /* Resources */,
+			);
+			path = Flicker;
+			sourceTree = "<group>";
+		};
+		E1000003 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				B1000001 /* AppDelegate.swift */,
+				B1000002 /* RootViewController.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		E1000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B1000003 /* SidebarDestination.swift */,
+				B1000006 /* JellyfinModels.swift */,
+				B1000009 /* IPTVModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E1000005 /* Sidebar */ = {
+			isa = PBXGroup;
+			children = (
+				B1000004 /* SidebarViewController.swift */,
+				B1000005 /* SidebarMenuButton.swift */,
+			);
+			path = Sidebar;
+			sourceTree = "<group>";
+		};
+		E1000006 /* Jellyfin */ = {
+			isa = PBXGroup;
+			children = (
+				B1000007 /* JellyfinAPI.swift */,
+				B1000008 /* ImageLoader.swift */,
+			);
+			path = Jellyfin;
+			sourceTree = "<group>";
+		};
+		E1000007 /* IPTV */ = {
+			isa = PBXGroup;
+			children = (
+				B100000A /* M3UParser.swift */,
+				B100000B /* IPTVManager.swift */,
+				B1000017 /* XtreamAPI.swift */,
+			);
+			path = IPTV;
+			sourceTree = "<group>";
+		};
+		E1000008 /* Content */ = {
+			isa = PBXGroup;
+			children = (
+				B100000C /* HomeViewController.swift */,
+				B100000D /* MediaRowView.swift */,
+				B100000E /* MediaCardCell.swift */,
+				B1000018 /* ThumbnailCardCell.swift */,
+				B1000019 /* HeroBannerView.swift */,
+				B100001A /* LiveTVRowView.swift */,
+				B100000F /* LibraryViewController.swift */,
+				B1000010 /* DetailViewController.swift */,
+				B1000011 /* EpisodesViewController.swift */,
+				B1000012 /* LiveTVViewController.swift */,
+				B1000013 /* SearchViewController.swift */,
+				B1000014 /* SettingsViewController.swift */,
+				B100001B /* ShimmerView.swift */,
+			);
+			path = Content;
+			sourceTree = "<group>";
+		};
+		E1000009 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C1000001 /* Flicker.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E100000A /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				B1000015 /* PlayerViewController.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
+		E100000B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B1000016 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F1000001 /* Flicker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F1000004 /* Build configuration list for PBXNativeTarget "Flicker" */;
+			buildPhases = (
+				F1000002 /* Sources */,
+				D1000001 /* Frameworks */,
+				F1000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Flicker;
+			productName = Flicker;
+			productReference = C1000001 /* Flicker.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F1000005 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					F1000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = F1000006 /* Build configuration list for PBXProject "Flicker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E1000001;
+			productRefGroup = E1000009 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F1000001 /* Flicker */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F1000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F1000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001 /* AppDelegate.swift in Sources */,
+				A1000002 /* RootViewController.swift in Sources */,
+				A1000003 /* SidebarDestination.swift in Sources */,
+				A1000004 /* SidebarViewController.swift in Sources */,
+				A1000005 /* SidebarMenuButton.swift in Sources */,
+				A1000006 /* JellyfinModels.swift in Sources */,
+				A1000007 /* JellyfinAPI.swift in Sources */,
+				A1000008 /* ImageLoader.swift in Sources */,
+				A1000009 /* IPTVModels.swift in Sources */,
+				A100000A /* M3UParser.swift in Sources */,
+				A100000B /* IPTVManager.swift in Sources */,
+				A100000C /* HomeViewController.swift in Sources */,
+				A100000D /* MediaRowView.swift in Sources */,
+				A100000E /* MediaCardCell.swift in Sources */,
+				A100000F /* LibraryViewController.swift in Sources */,
+				A1000010 /* DetailViewController.swift in Sources */,
+				A1000011 /* EpisodesViewController.swift in Sources */,
+				A1000012 /* LiveTVViewController.swift in Sources */,
+				A1000013 /* SearchViewController.swift in Sources */,
+				A1000014 /* SettingsViewController.swift in Sources */,
+				A1000015 /* PlayerViewController.swift in Sources */,
+				A1000016 /* XtreamAPI.swift in Sources */,
+				A1000017 /* ThumbnailCardCell.swift in Sources */,
+				A1000018 /* HeroBannerView.swift in Sources */,
+				A1000019 /* LiveTVRowView.swift in Sources */,
+				A100001A /* ShimmerView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		G1000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+		G1000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = appletvos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		G1000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8656625Z2P;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Flicker/Resources/Info.plist;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = me.athion.Flicker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		G1000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8656625Z2P;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Flicker/Resources/Info.plist;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = me.athion.Flicker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F1000004 /* Build configuration list for PBXNativeTarget "Flicker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				G1000003 /* Debug */,
+				G1000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F1000006 /* Build configuration list for PBXProject "Flicker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				G1000001 /* Debug */,
+				G1000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F1000005 /* Project object */;
+}
