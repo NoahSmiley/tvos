@@ -32,10 +32,10 @@ final class LibraryViewController: UIViewController {
         self.libraryType = libraryType
 
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 340, height: 510)
-        layout.minimumInteritemSpacing = 32
-        layout.minimumLineSpacing = 40
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 48, bottom: 48, right: 48)
+        layout.itemSize = CGSize(width: 280, height: 420)
+        layout.minimumInteritemSpacing = 20
+        layout.minimumLineSpacing = 28
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 32, bottom: 48, right: 32)
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
 
         super.init(nibName: nil, bundle: nil)
