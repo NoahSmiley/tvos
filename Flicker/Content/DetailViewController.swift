@@ -198,27 +198,11 @@ final class DetailViewController: UIViewController {
         buttonStack.spacing = 14
 
         let playTitle = (item.userData?.playbackPositionTicks ?? 0) > 0 ? " Resume" : " Play"
-        playButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-        playButton.setTitle(playTitle, for: .normal)
-        playButton.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
-        playButton.tintColor = .white
-        playButton.backgroundColor = UIColor.white.withAlphaComponent(0.15)
-        playButton.layer.cornerRadius = 16
-        playButton.layer.borderWidth = 1.5
-        playButton.layer.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
-        playButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
+        styleButton(playButton, title: playTitle, icon: "play.fill", isPrimary: true)
         playButton.addTarget(self, action: #selector(playTapped), for: .primaryActionTriggered)
         buttonStack.addArrangedSubview(playButton)
 
-        listButton.setImage(UIImage(systemName: "plus"), for: .normal)
-        listButton.setTitle(" My List", for: .normal)
-        listButton.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
-        listButton.tintColor = .white
-        listButton.backgroundColor = UIColor.white.withAlphaComponent(0.08)
-        listButton.layer.cornerRadius = 16
-        listButton.layer.borderWidth = 1
-        listButton.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
-        listButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
+        styleButton(listButton, title: " My List", icon: "plus", isPrimary: false)
         buttonStack.addArrangedSubview(listButton)
 
         contentStack.addArrangedSubview(buttonStack)
@@ -272,6 +256,18 @@ final class DetailViewController: UIViewController {
                 logoImageView.widthAnchor.constraint(equalToConstant: targetWidth).isActive = true
             }
         }
+    }
+
+    private func styleButton(_ button: UIButton, title: String, icon: String, isPrimary: Bool) {
+        button.setImage(UIImage(systemName: icon), for: .normal)
+        button.setTitle(title, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 22, weight: .semibold)
+        button.tintColor = isPrimary ? .black : .white
+        button.setTitleColor(isPrimary ? .black : .white, for: .normal)
+        button.setTitleColor(isPrimary ? .black : .white, for: .focused)
+        button.backgroundColor = isPrimary ? .white : UIColor.white.withAlphaComponent(0.15)
+        button.layer.cornerRadius = 12
+        button.contentEdgeInsets = UIEdgeInsets(top: 12, left: 28, bottom: 12, right: 28)
     }
 
     private func addMeta(to stack: UIStackView, text: String) {
