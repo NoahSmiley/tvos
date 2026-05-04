@@ -3,7 +3,7 @@ import UIKit
 final class CollectionViewController: UIViewController {
 
     private let item: JellyfinItem
-    private let bgColor = UIColor(white: 0.04, alpha: 1)
+    private let bgColor = AppTheme.background
 
     private let backdropImageView = UIImageView()
     private let bottomGradient = CAGradientLayer()
@@ -142,7 +142,7 @@ final class CollectionViewController: UIViewController {
         contentStack.addArrangedSubview(logoImageView)
 
         titleLabel.text = item.name
-        titleLabel.font = .systemFont(ofSize: 62, weight: .bold)
+        titleLabel.font = AppTheme.font(62, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
         titleLabel.layer.shadowColor = UIColor.black.cgColor
@@ -158,20 +158,20 @@ final class CollectionViewController: UIViewController {
         badgeStack.alignment = .center
 
         let collectionIcon = UIImageView(image: UIImage(systemName: "rectangle.stack.fill"))
-        collectionIcon.tintColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0)
+        collectionIcon.tintColor = AppTheme.textActive
         collectionIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20)
         badgeStack.addArrangedSubview(collectionIcon)
 
         let badgeLabel = UILabel()
         badgeLabel.text = "Collection"
-        badgeLabel.font = .systemFont(ofSize: 22, weight: .semibold)
-        badgeLabel.textColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0)
+        badgeLabel.font = AppTheme.font(22, weight: .semibold)
+        badgeLabel.textColor = AppTheme.textActive
         badgeStack.addArrangedSubview(badgeLabel)
 
         if let year = item.productionYear {
             let yearLabel = UILabel()
             yearLabel.text = "· \(year)"
-            yearLabel.font = .systemFont(ofSize: 22, weight: .medium)
+            yearLabel.font = AppTheme.font(22, weight: .medium)
             yearLabel.textColor = UIColor(white: 0.5, alpha: 1)
             badgeStack.addArrangedSubview(yearLabel)
         }
@@ -188,7 +188,7 @@ final class CollectionViewController: UIViewController {
         if let overview = item.overview, !overview.isEmpty {
             let synopsisLabel = UILabel()
             synopsisLabel.text = overview
-            synopsisLabel.font = .systemFont(ofSize: 24, weight: .regular)
+            synopsisLabel.font = AppTheme.font(24)
             synopsisLabel.textColor = UIColor(white: 0.6, alpha: 1)
             synopsisLabel.numberOfLines = 4
 
@@ -207,7 +207,7 @@ final class CollectionViewController: UIViewController {
         // Movies header
         let moviesHeader = UILabel()
         moviesHeader.text = "Movies"
-        moviesHeader.font = .systemFont(ofSize: 32, weight: .bold)
+        moviesHeader.font = AppTheme.font(32, weight: .bold)
         moviesHeader.textColor = .white
         contentStack.addArrangedSubview(moviesHeader)
 

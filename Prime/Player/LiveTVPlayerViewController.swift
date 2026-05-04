@@ -113,12 +113,12 @@ final class LiveTVPlayerViewController: AVPlayerViewController {
         infoStack.translatesAutoresizingMaskIntoConstraints = false
         surfOverlay.addSubview(infoStack)
 
-        channelInfoLabel.font = .systemFont(ofSize: 32, weight: .bold)
+        channelInfoLabel.font = AppTheme.font(32, weight: .bold)
         channelInfoLabel.textColor = .white
         channelInfoLabel.text = cleanName(currentStream)
         infoStack.addArrangedSubview(channelInfoLabel)
 
-        nowPlayingInfoLabel.font = .systemFont(ofSize: 22, weight: .regular)
+        nowPlayingInfoLabel.font = AppTheme.font(22)
         nowPlayingInfoLabel.textColor = UIColor(white: 0.6, alpha: 1)
         nowPlayingInfoLabel.text = "Live"
         infoStack.addArrangedSubview(nowPlayingInfoLabel)

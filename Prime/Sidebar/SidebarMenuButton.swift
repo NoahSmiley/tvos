@@ -35,7 +35,7 @@ final class SidebarMenuButton: UIButton {
         iconView.translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel2.text = destination.title
-        titleLabel2.font = .systemFont(ofSize: 28, weight: .semibold)
+        titleLabel2.font = AppTheme.font(28, weight: .semibold)
         titleLabel2.textColor = UIColor(white: 0.45, alpha: 1)
         titleLabel2.translatesAutoresizingMaskIntoConstraints = false
 

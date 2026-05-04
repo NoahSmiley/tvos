@@ -35,7 +35,7 @@ final class MediaCardCell: UICollectionViewCell {
         progressBar.isHidden = true
         contentView.addSubview(progressBar)
 
-        progressFill.backgroundColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0)
+        progressFill.backgroundColor = AppTheme.textActive
         progressFill.layer.cornerRadius = 2
         progressFill.translatesAutoresizingMaskIntoConstraints = false
         progressBar.addSubview(progressFill)
@@ -192,7 +192,7 @@ final class PosterPickerViewController: UIViewController {
 
         let titleLabel = UILabel()
         titleLabel.text = "Choose Poster"
-        titleLabel.font = .systemFont(ofSize: 42, weight: .bold)
+        titleLabel.font = AppTheme.font(42, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -200,7 +200,7 @@ final class PosterPickerViewController: UIViewController {
 
         let subtitleLabel = UILabel()
         subtitleLabel.text = item.name
-        subtitleLabel.font = .systemFont(ofSize: 28, weight: .medium)
+        subtitleLabel.font = AppTheme.font(28, weight: .medium)
         subtitleLabel.textColor = UIColor(white: 0.6, alpha: 1)
         subtitleLabel.textAlignment = .center
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -216,7 +216,7 @@ final class PosterPickerViewController: UIViewController {
 
         let resetButton = UIButton(type: .system)
         resetButton.setTitle("Use Default Poster", for: .normal)
-        resetButton.titleLabel?.font = .systemFont(ofSize: 24, weight: .semibold)
+        resetButton.titleLabel?.font = AppTheme.font(24, weight: .semibold)
         resetButton.tintColor = UIColor(white: 0.5, alpha: 1)
         resetButton.addTarget(self, action: #selector(resetTapped), for: .primaryActionTriggered)
         resetButton.translatesAutoresizingMaskIntoConstraints = false
@@ -291,7 +291,7 @@ final class PosterPickerCell: UICollectionViewCell {
         contentView.addSubview(imageView)
 
         checkmark.image = UIImage(systemName: "checkmark.circle.fill")
-        checkmark.tintColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0)
+        checkmark.tintColor = AppTheme.textActive
         checkmark.translatesAutoresizingMaskIntoConstraints = false
         checkmark.isHidden = true
         contentView.addSubview(checkmark)
@@ -315,7 +315,7 @@ final class PosterPickerCell: UICollectionViewCell {
         imageView.image = image
         checkmark.isHidden = !isSelected
         contentView.layer.borderWidth = isSelected ? 3 : 0
-        contentView.layer.borderColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0).cgColor
+        contentView.layer.borderColor = AppTheme.textActive.cgColor
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {

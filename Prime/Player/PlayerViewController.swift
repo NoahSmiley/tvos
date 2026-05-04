@@ -118,7 +118,7 @@ final class PlayerViewController: AVPlayerViewController {
         config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 28)
         config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attr in
             var attr = attr
-            attr.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+            attr.font = AppTheme.font(24, weight: .bold)
             return attr
         }
         config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)

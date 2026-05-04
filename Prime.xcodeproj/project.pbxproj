@@ -36,6 +36,8 @@
 		A100001B /* LiveTVPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001C /* LiveTVPlayerViewController.swift */; };
 		A100001C /* PosterCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001D /* PosterCacheManager.swift */; };
 		A100001D /* PosterCache in Resources */ = {isa = PBXBuildFile; fileRef = B100001E /* PosterCache */; };
+		A1000032 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000030 /* AppTheme.swift */; };
+		A1000033 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = B1000031 /* Fonts */; };
 		A100001E /* CollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001F /* CollectionViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -70,6 +72,8 @@
 		B100001C /* LiveTVPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVPlayerViewController.swift; sourceTree = "<group>"; };
 		B100001D /* PosterCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosterCacheManager.swift; sourceTree = "<group>"; };
 		B100001E /* PosterCache */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PosterCache; sourceTree = "<group>"; };
+		B1000030 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		B1000031 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 		B100001F /* CollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewController.swift; sourceTree = "<group>"; };
 		C1000001 /* Prime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Prime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -104,6 +108,7 @@
 				E1000008 /* Content */,
 				E100000A /* Player */,
 				E100000B /* Resources */,
+				E100000C /* Utils */,
 			);
 			path = Prime;
 			sourceTree = "<group>";
@@ -199,8 +204,17 @@
 			children = (
 				B1000016 /* Info.plist */,
 				B100001E /* PosterCache */,
+				B1000031 /* Fonts */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		E100000C /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				B1000030 /* AppTheme.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -262,6 +276,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A100001D /* PosterCache in Resources */,
+				A1000033 /* Fonts in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,6 +315,7 @@
 				A100001A /* ShimmerView.swift in Sources */,
 				A100001B /* LiveTVPlayerViewController.swift in Sources */,
 				A100001C /* PosterCacheManager.swift in Sources */,
+				A1000032 /* AppTheme.swift in Sources */,
 				A100001E /* CollectionViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

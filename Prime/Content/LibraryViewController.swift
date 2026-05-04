@@ -78,7 +78,7 @@ final class LibraryViewController: UIViewController {
     private func setupHeader() {
         let label = UILabel()
         label.text = libraryType.title
-        label.font = .systemFont(ofSize: 48, weight: .bold)
+        label.font = AppTheme.font(48, weight: .bold)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(label)

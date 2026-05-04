@@ -44,14 +44,14 @@ final class ThumbnailCardCell: UICollectionViewCell {
         bottomGradientLayer = gradient
 
         // Title (show name for episodes, movie name for movies)
-        titleLabel.font = .systemFont(ofSize: 22, weight: .semibold)
+        titleLabel.font = AppTheme.font(22, weight: .semibold)
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 1
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
 
         // Subtitle (e.g. "S2:E5 Episode Title")
-        subtitleLabel.font = .systemFont(ofSize: 18, weight: .regular)
+        subtitleLabel.font = AppTheme.font(18)
         subtitleLabel.textColor = UIColor(white: 0.55, alpha: 1)
         subtitleLabel.numberOfLines = 1
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -63,7 +63,7 @@ final class ThumbnailCardCell: UICollectionViewCell {
         progressBar.isHidden = true
         contentView.addSubview(progressBar)
 
-        progressFill.backgroundColor = UIColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1)
+        progressFill.backgroundColor = AppTheme.textActive
         progressFill.translatesAutoresizingMaskIntoConstraints = false
         progressBar.addSubview(progressFill)
 

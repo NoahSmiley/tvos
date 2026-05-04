@@ -3,7 +3,7 @@ import UIKit
 final class DetailViewController: UIViewController {
 
     private let item: JellyfinItem
-    private let bgColor = UIColor(white: 0.04, alpha: 1)
+    private let bgColor = AppTheme.background
 
     private let backdropImageView = UIImageView()
     private let bottomGradient = CAGradientLayer()
@@ -154,7 +154,7 @@ final class DetailViewController: UIViewController {
         contentStack.addArrangedSubview(logoImageView)
 
         titleLabel.text = item.seriesName ?? item.name
-        titleLabel.font = .systemFont(ofSize: 50, weight: .bold)
+        titleLabel.font = AppTheme.font(50, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
         titleLabel.layer.shadowColor = UIColor.black.cgColor
@@ -176,12 +176,12 @@ final class DetailViewController: UIViewController {
             let s = UIStackView()
             s.axis = .horizontal; s.spacing = 4; s.alignment = .center
             let star = UIImageView(image: UIImage(systemName: "star.fill"))
-            star.tintColor = UIColor(red: 1, green: 0.84, blue: 0, alpha: 1)
+            star.tintColor = AppTheme.ratingGold
             star.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 16)
             s.addArrangedSubview(star)
             let l = UILabel()
             l.text = String(format: "%.1f", score)
-            l.font = .systemFont(ofSize: 21, weight: .semibold)
+            l.font = AppTheme.font(21, weight: .semibold)
             l.textColor = .white
             s.addArrangedSubview(l)
             metaStack.addArrangedSubview(s)
@@ -211,7 +211,7 @@ final class DetailViewController: UIViewController {
         if let overview = item.overview, !overview.isEmpty {
             let synopsisLabel = UILabel()
             synopsisLabel.text = overview
-            synopsisLabel.font = .systemFont(ofSize: 24, weight: .regular)
+            synopsisLabel.font = AppTheme.font(24)
             synopsisLabel.textColor = UIColor(white: 0.6, alpha: 1)
             synopsisLabel.numberOfLines = 4
 
@@ -261,7 +261,7 @@ final class DetailViewController: UIViewController {
     private func addMeta(to stack: UIStackView, text: String) {
         let l = UILabel()
         l.text = text
-        l.font = .systemFont(ofSize: 21, weight: .medium)
+        l.font = AppTheme.font(21, weight: .medium)
         l.textColor = UIColor(white: 0.55, alpha: 1)
         stack.addArrangedSubview(l)
     }
@@ -273,7 +273,7 @@ final class DetailViewController: UIViewController {
 
         let title = UILabel()
         title.text = "Cast & Crew"
-        title.font = .systemFont(ofSize: 28, weight: .semibold)
+        title.font = AppTheme.font(28, weight: .semibold)
         title.textColor = .white
         title.translatesAutoresizingMaskIntoConstraints = false
         wrapper.addSubview(title)
@@ -390,7 +390,7 @@ final class DetailViewController: UIViewController {
 
         let label = UILabel()
         label.text = "Seasons"
-        label.font = .systemFont(ofSize: 28, weight: .semibold)
+        label.font = AppTheme.font(28, weight: .semibold)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         wrapper.addSubview(label)
@@ -462,7 +462,7 @@ final class DetailViewController: UIViewController {
 
         let label = UILabel()
         label.text = "Episodes"
-        label.font = .systemFont(ofSize: 28, weight: .semibold)
+        label.font = AppTheme.font(28, weight: .semibold)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         wrapper.addSubview(label)
@@ -582,14 +582,14 @@ final class CastCell: UICollectionViewCell {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(imageView)
 
-        nameLabel.font = .systemFont(ofSize: 18, weight: .medium)
+        nameLabel.font = AppTheme.font(18, weight: .medium)
         nameLabel.textColor = .white
         nameLabel.textAlignment = .center
         nameLabel.numberOfLines = 2
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(nameLabel)
 
-        roleLabel.font = .systemFont(ofSize: 15, weight: .regular)
+        roleLabel.font = AppTheme.font(15)
         roleLabel.textColor = UIColor(white: 0.4, alpha: 1)
         roleLabel.textAlignment = .center
         roleLabel.numberOfLines = 1
@@ -653,7 +653,7 @@ final class SeasonPillButton: UIButton {
         super.init(frame: .zero)
 
         setTitle(season.name, for: .normal)
-        titleLabel?.font = .systemFont(ofSize: 22, weight: .medium)
+        titleLabel?.font = AppTheme.font(22, weight: .medium)
         contentEdgeInsets = UIEdgeInsets(top: 10, left: 24, bottom: 10, right: 24)
         layer.cornerRadius = 22
 
@@ -667,13 +667,13 @@ final class SeasonPillButton: UIButton {
             backgroundColor = .white
             setTitleColor(.black, for: .normal)
             setTitleColor(.black, for: .focused)
-            titleLabel?.font = .systemFont(ofSize: 22, weight: .bold)
+            titleLabel?.font = AppTheme.font(22, weight: .bold)
             layer.borderWidth = 0
         } else {
             backgroundColor = UIColor.white.withAlphaComponent(0.15)
             setTitleColor(UIColor(white: 0.75, alpha: 1), for: .normal)
             setTitleColor(.white, for: .focused)
-            titleLabel?.font = .systemFont(ofSize: 22, weight: .medium)
+            titleLabel?.font = AppTheme.font(22, weight: .medium)
             layer.borderWidth = 1
             layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
         }
@@ -743,7 +743,7 @@ final class EpisodeRowView: UIView {
         progressBar.isHidden = true
         thumbImageView.addSubview(progressBar)
 
-        progressFill.backgroundColor = UIColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1)
+        progressFill.backgroundColor = AppTheme.textActive
         progressFill.translatesAutoresizingMaskIntoConstraints = false
         progressBar.addSubview(progressFill)
 
@@ -758,14 +758,14 @@ final class EpisodeRowView: UIView {
         badgeContainer.setContentHuggingPriority(.required, for: .horizontal)
         badgeContainer.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        badgeLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        badgeLabel.font = AppTheme.font(20, weight: .bold)
         badgeLabel.textColor = .black
         badgeLabel.translatesAutoresizingMaskIntoConstraints = false
         badgeLabel.setContentHuggingPriority(.required, for: .horizontal)
         badgeContainer.addSubview(badgeLabel)
 
         // Title
-        epTitleLabel.font = .systemFont(ofSize: 27, weight: .semibold)
+        epTitleLabel.font = AppTheme.font(27, weight: .semibold)
         epTitleLabel.textColor = .white
         epTitleLabel.numberOfLines = 1
         epTitleLabel.lineBreakMode = .byTruncatingTail
@@ -773,7 +773,7 @@ final class EpisodeRowView: UIView {
         epTitleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         // Duration
-        durationLabel.font = .systemFont(ofSize: 20, weight: .regular)
+        durationLabel.font = AppTheme.font(20)
         durationLabel.textColor = UIColor(white: 0.45, alpha: 1)
         durationLabel.setContentHuggingPriority(.required, for: .horizontal)
         durationLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -787,7 +787,7 @@ final class EpisodeRowView: UIView {
         titleRow.translatesAutoresizingMaskIntoConstraints = false
 
         // Overview
-        overviewLabel.font = .systemFont(ofSize: 20, weight: .regular)
+        overviewLabel.font = AppTheme.font(20)
         overviewLabel.textColor = UIColor(white: 0.5, alpha: 1)
         overviewLabel.numberOfLines = 2
         overviewLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -903,7 +903,7 @@ final class FocusableButton: UIButton {
         let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
         setImage(UIImage(systemName: icon, withConfiguration: config), for: .normal)
         setTitle(" \(title)", for: .normal)
-        titleLabel?.font = .systemFont(ofSize: 22, weight: .semibold)
+        titleLabel?.font = AppTheme.font(22, weight: .semibold)
 
         if isPrimary {
             normalBg = .white

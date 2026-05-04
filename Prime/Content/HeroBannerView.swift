@@ -22,7 +22,7 @@ final class HeroBannerView: UIView {
     private var loadTask: Task<Void, Never>?
 
     // Card width drives height via 16:9 aspect ratio
-    private let bgColor = UIColor(white: 0.04, alpha: 1)
+    private let bgColor = AppTheme.background
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -64,7 +64,7 @@ final class HeroBannerView: UIView {
         cardView.addSubview(logoImageView)
 
         // Fallback title
-        titleLabel.font = .systemFont(ofSize: 48, weight: .bold)
+        titleLabel.font = AppTheme.font(48, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
         titleLabel.isHidden = true
@@ -75,7 +75,7 @@ final class HeroBannerView: UIView {
         let playImage = UIImage(systemName: "play.fill")
         watchButton.setImage(playImage, for: .normal)
         watchButton.setTitle("  Watch Now", for: .normal)
-        watchButton.titleLabel?.font = .systemFont(ofSize: 24, weight: .bold)
+        watchButton.titleLabel?.font = AppTheme.font(24, weight: .bold)
         watchButton.tintColor = .white
         watchButton.backgroundColor = UIColor.white.withAlphaComponent(0.2)
         watchButton.layer.cornerRadius = 10

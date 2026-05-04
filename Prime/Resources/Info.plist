@@ -31,5 +31,18 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>OpenAISans-Light.ttf</string>
+		<string>OpenAISans-LightItalic.ttf</string>
+		<string>OpenAISans-Regular.ttf</string>
+		<string>OpenAISans-RegularItalic.ttf</string>
+		<string>OpenAISans-Medium.ttf</string>
+		<string>OpenAISans-MediumItalic.ttf</string>
+		<string>OpenAISans-Semibold.ttf</string>
+		<string>OpenAISans-SemiboldItalic.ttf</string>
+		<string>OpenAISans-Bold.ttf</string>
+		<string>OpenAISans-BoldItalic.ttf</string>
+	</array>
 </dict>
 </plist>

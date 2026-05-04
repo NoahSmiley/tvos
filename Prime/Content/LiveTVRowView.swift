@@ -25,7 +25,7 @@ final class LiveTVRowView: UIView {
         super.init(frame: .zero)
 
         titleLabel.text = title
-        titleLabel.font = .systemFont(ofSize: 32, weight: .bold)
+        titleLabel.font = AppTheme.font(32, weight: .bold)
         titleLabel.textColor = .white
 
         collectionView.backgroundColor = .clear
@@ -105,7 +105,7 @@ final class LiveTVCardCell: UICollectionViewCell {
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(logoImageView)
 
-        nameLabel.font = .systemFont(ofSize: 22, weight: .semibold)
+        nameLabel.font = AppTheme.font(22, weight: .semibold)
         nameLabel.textColor = .white
         nameLabel.numberOfLines = 2
         nameLabel.textAlignment = .center
@@ -113,9 +113,9 @@ final class LiveTVCardCell: UICollectionViewCell {
         contentView.addSubview(nameLabel)
 
         liveTag.text = "LIVE"
-        liveTag.font = .systemFont(ofSize: 14, weight: .bold)
+        liveTag.font = AppTheme.font(14, weight: .bold)
         liveTag.textColor = .white
-        liveTag.backgroundColor = UIColor(red: 1, green: 0.25, blue: 0.25, alpha: 1)
+        liveTag.backgroundColor = AppTheme.liveRed
         liveTag.textAlignment = .center
         liveTag.layer.cornerRadius = 4
         liveTag.clipsToBounds = true

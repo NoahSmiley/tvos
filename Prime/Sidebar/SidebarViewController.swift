@@ -20,7 +20,7 @@ final class SidebarViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(white: 0.04, alpha: 1)
+        view.backgroundColor = AppTheme.background
         setupMenu()
         setupCollapseButton()
         selectDestination(.home, animated: false)

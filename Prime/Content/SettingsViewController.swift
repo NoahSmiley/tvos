@@ -68,7 +68,7 @@ final class SettingsViewController: UIViewController {
     private func setupUI() {
         let titleLabel = UILabel()
         titleLabel.text = "Settings"
-        titleLabel.font = .systemFont(ofSize: 48, weight: .bold)
+        titleLabel.font = AppTheme.font(48, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
@@ -92,15 +92,15 @@ final class SettingsViewController: UIViewController {
         addInfoRow("User", value: "noah")
         addInfoRow("Status", value: JellyfinAPI.shared.isAuthenticated ? "Connected" : "Not Connected",
                     color: JellyfinAPI.shared.isAuthenticated
-                        ? UIColor(red: 0.3, green: 0.8, blue: 0.3, alpha: 1)
-                        : UIColor(red: 1, green: 0.4, blue: 0.4, alpha: 1))
+                        ? AppTheme.statusOk
+                        : AppTheme.error)
 
         if !JellyfinAPI.shared.isAuthenticated {
             let reconnectButton = UIButton(type: .system)
             reconnectButton.setTitle("Reconnect", for: .normal)
-            reconnectButton.titleLabel?.font = .systemFont(ofSize: 28, weight: .bold)
+            reconnectButton.titleLabel?.font = AppTheme.font(28, weight: .bold)
             reconnectButton.tintColor = .white
-            reconnectButton.backgroundColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0)
+            reconnectButton.backgroundColor = AppTheme.textActive
             reconnectButton.layer.cornerRadius = 14
             reconnectButton.addTarget(self, action: #selector(reconnectTapped), for: .primaryActionTriggered)
             reconnectButton.heightAnchor.constraint(equalToConstant: 64).isActive = true
@@ -116,12 +116,12 @@ final class SettingsViewController: UIViewController {
         addSectionHeader("Playback")
 
         addInfoRow("Local Network", value: "Full 4K (no transcode)",
-                   color: UIColor(red: 0.3, green: 0.8, blue: 0.3, alpha: 1))
+                   color: AppTheme.statusOk)
 
         let quality = RemoteStreamQuality.current
         let qualityButton = UIButton(type: .system)
         qualityButton.setTitle("  Remote Quality: \(quality.title)", for: .normal)
-        qualityButton.titleLabel?.font = .systemFont(ofSize: 26, weight: .semibold)
+        qualityButton.titleLabel?.font = AppTheme.font(26, weight: .semibold)
         qualityButton.tintColor = .white
         qualityButton.contentHorizontalAlignment = .left
         qualityButton.backgroundColor = UIColor.white.withAlphaComponent(0.08)
@@ -132,7 +132,7 @@ final class SettingsViewController: UIViewController {
 
         let qualityDesc = UILabel()
         qualityDesc.text = quality.subtitle
-        qualityDesc.font = .systemFont(ofSize: 20, weight: .regular)
+        qualityDesc.font = AppTheme.font(20)
         qualityDesc.textColor = UIColor(white: 0.5, alpha: 1)
         qualityDesc.numberOfLines = 0
         stackView.addArrangedSubview(qualityDesc)
@@ -147,14 +147,14 @@ final class SettingsViewController: UIViewController {
         addSectionHeader("IPTV (Xtream)")
         addInfoRow("Server", value: "line.trxdnscloud.ru")
         addInfoRow("Username", value: "914f80594b")
-        addInfoRow("Status", value: "Active", color: UIColor(red: 0.3, green: 0.8, blue: 0.3, alpha: 1))
+        addInfoRow("Status", value: "Active", color: AppTheme.statusOk)
     }
 
     private func addSectionHeader(_ title: String) {
         let label = UILabel()
         label.text = title
-        label.font = .systemFont(ofSize: 32, weight: .bold)
-        label.textColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0)
+        label.font = AppTheme.font(32, weight: .bold)
+        label.textColor = AppTheme.textActive
         stackView.addArrangedSubview(label)
     }
 
@@ -165,13 +165,13 @@ final class SettingsViewController: UIViewController {
 
         let keyLabel = UILabel()
         keyLabel.text = label
-        keyLabel.font = .systemFont(ofSize: 26, weight: .medium)
+        keyLabel.font = AppTheme.font(26, weight: .medium)
         keyLabel.textColor = .gray
         keyLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
 
         let valueLabel = UILabel()
         valueLabel.text = value
-        valueLabel.font = .systemFont(ofSize: 26, weight: .semibold)
+        valueLabel.font = AppTheme.font(26, weight: .semibold)
         valueLabel.textColor = color
         valueLabel.textAlignment = .right
 

@@ -21,7 +21,7 @@ final class EpisodesViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(white: 0.04, alpha: 1)
+        view.backgroundColor = AppTheme.background
         setupHeader()
         setupTableView()
         loadEpisodes()
@@ -31,7 +31,7 @@ final class EpisodesViewController: UIViewController {
         let backButton = UIButton(type: .system)
         backButton.setImage(UIImage(systemName: "arrow.left"), for: .normal)
         backButton.setTitle("  Back", for: .normal)
-        backButton.titleLabel?.font = .systemFont(ofSize: 26, weight: .semibold)
+        backButton.titleLabel?.font = AppTheme.font(26, weight: .semibold)
         backButton.tintColor = .white
         backButton.addTarget(self, action: #selector(backTapped), for: .primaryActionTriggered)
         backButton.translatesAutoresizingMaskIntoConstraints = false
@@ -39,7 +39,7 @@ final class EpisodesViewController: UIViewController {
 
         let titleLabel = UILabel()
         titleLabel.text = seasonName
-        titleLabel.font = .systemFont(ofSize: 44, weight: .bold)
+        titleLabel.font = AppTheme.font(44, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
@@ -136,15 +136,15 @@ final class EpisodeCell: UITableViewCell {
         thumbImageView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(thumbImageView)
 
-        epNumberLabel.font = .systemFont(ofSize: 20, weight: .bold)
-        epNumberLabel.textColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0)
+        epNumberLabel.font = AppTheme.font(20, weight: .bold)
+        epNumberLabel.textColor = AppTheme.textActive
         epNumberLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        epTitleLabel.font = .systemFont(ofSize: 26, weight: .semibold)
+        epTitleLabel.font = AppTheme.font(26, weight: .semibold)
         epTitleLabel.textColor = .white
         epTitleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        epOverviewLabel.font = .systemFont(ofSize: 20, weight: .regular)
+        epOverviewLabel.font = AppTheme.font(20)
         epOverviewLabel.textColor = .gray
         epOverviewLabel.numberOfLines = 2
         epOverviewLabel.translatesAutoresizingMaskIntoConstraints = false

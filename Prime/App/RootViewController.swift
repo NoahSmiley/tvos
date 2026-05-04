@@ -33,7 +33,7 @@ final class RootViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(white: 0.04, alpha: 1)
+        view.backgroundColor = AppTheme.background
         setupSidebar()
         setupSeparator()
         setupContentContainer()

@@ -192,7 +192,7 @@ final class HomeViewController: UIViewController {
 
             } catch {
                 removeSkeletons()
-                showMessage(error.localizedDescription, color: UIColor(red: 1, green: 0.4, blue: 0.4, alpha: 1))
+                showMessage(error.localizedDescription, color: AppTheme.error)
             }
         }
     }
@@ -201,7 +201,7 @@ final class HomeViewController: UIViewController {
     private func showMessage(_ text: String, color: UIColor) {
         let label = UILabel()
         label.text = text
-        label.font = .systemFont(ofSize: 28, weight: .medium)
+        label.font = AppTheme.font(28, weight: .medium)
         label.textColor = color
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -253,7 +253,7 @@ extension HomeViewController {
 
                 let label = UILabel()
                 label.text = "Live TV"
-                label.font = .systemFont(ofSize: 32, weight: .bold)
+                label.font = AppTheme.font(32, weight: .bold)
                 label.textColor = .white
                 label.translatesAutoresizingMaskIntoConstraints = false
                 wrapper.addSubview(label)

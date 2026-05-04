@@ -83,7 +83,7 @@ final class LiveTVViewController: UIViewController {
         headerRow.translatesAutoresizingMaskIntoConstraints = false
         let titleLabel = UILabel()
         titleLabel.text = "Live TV"
-        titleLabel.font = .systemFont(ofSize: 48, weight: .bold)
+        titleLabel.font = AppTheme.font(48, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         headerRow.addSubview(titleLabel)
@@ -92,7 +92,7 @@ final class LiveTVViewController: UIViewController {
         let searchIcon = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .medium))
         searchButton.setImage(searchIcon, for: .normal)
         searchButton.setTitle("  Search channels", for: .normal)
-        searchButton.titleLabel?.font = .systemFont(ofSize: 22, weight: .medium)
+        searchButton.titleLabel?.font = AppTheme.font(22, weight: .medium)
         searchButton.tintColor = UIColor(white: 0.5, alpha: 1)
         searchButton.backgroundColor = UIColor(white: 0.08, alpha: 1)
         searchButton.layer.cornerRadius = 16
@@ -342,14 +342,14 @@ final class LiveTVViewController: UIViewController {
 
         let label = UILabel()
         label.text = title
-        label.font = .systemFont(ofSize: 32, weight: .bold)
+        label.font = AppTheme.font(32, weight: .bold)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         wrapper.addSubview(label)
 
         let countLabel = UILabel()
         countLabel.text = "\(streams.count) channels"
-        countLabel.font = .systemFont(ofSize: 20, weight: .regular)
+        countLabel.font = AppTheme.font(20)
         countLabel.textColor = UIColor(white: 0.4, alpha: 1)
         countLabel.translatesAutoresizingMaskIntoConstraints = false
         wrapper.addSubview(countLabel)
@@ -409,7 +409,7 @@ final class LiveTVViewController: UIViewController {
 
         let label = UILabel()
         label.text = "Recently Watched"
-        label.font = .systemFont(ofSize: 32, weight: .bold)
+        label.font = AppTheme.font(32, weight: .bold)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         wrapper.addSubview(label)
@@ -673,9 +673,9 @@ final class LiveTVCard: UIButton {
 
         // LIVE badge
         liveBadge.text = " LIVE "
-        liveBadge.font = .systemFont(ofSize: 13, weight: .heavy)
+        liveBadge.font = AppTheme.font(13, weight: .bold)
         liveBadge.textColor = .white
-        liveBadge.backgroundColor = UIColor(red: 0.9, green: 0.15, blue: 0.15, alpha: 1)
+        liveBadge.backgroundColor = AppTheme.liveRed
         liveBadge.layer.cornerRadius = 4
         liveBadge.clipsToBounds = true
         liveBadge.translatesAutoresizingMaskIntoConstraints = false
@@ -683,14 +683,14 @@ final class LiveTVCard: UIButton {
 
         // Program title (hero text — shows what's on)
         programTitleLabel.text = cleanName // fallback to channel name until EPG loads
-        programTitleLabel.font = .systemFont(ofSize: 22, weight: .bold)
+        programTitleLabel.font = AppTheme.font(22, weight: .bold)
         programTitleLabel.textColor = .white
         programTitleLabel.numberOfLines = 1
         programTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(programTitleLabel)
 
         // Program info (time | duration)
-        programInfoLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        programInfoLabel.font = AppTheme.font(16, weight: .medium)
         programInfoLabel.textColor = UIColor(white: 0.5, alpha: 1)
         programInfoLabel.numberOfLines = 1
         programInfoLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -698,7 +698,7 @@ final class LiveTVCard: UIButton {
 
         // Small channel name (only visible if EPG loaded, otherwise the title IS the channel name)
         channelNameLabel.text = cleanName
-        channelNameLabel.font = .systemFont(ofSize: 15, weight: .medium)
+        channelNameLabel.font = AppTheme.font(15, weight: .medium)
         channelNameLabel.textColor = UIColor(white: 0.4, alpha: 1)
         channelNameLabel.numberOfLines = 1
         channelNameLabel.isHidden = true // hidden until EPG loads
@@ -766,7 +766,7 @@ final class LiveTVCard: UIButton {
                 // Extract dominant color for gradient background
                 let color = img.dominantColor ?? UIColor(white: 0.15, alpha: 1)
                 let darkColor = color.withAlphaComponent(0.4)
-                gradientLayer.colors = [darkColor.cgColor, UIColor(white: 0.04, alpha: 1).cgColor]
+                gradientLayer.colors = [darkColor.cgColor, AppTheme.background.cgColor]
             }
         }
     }

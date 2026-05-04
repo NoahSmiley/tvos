@@ -41,7 +41,7 @@ final class MediaRowView: UIView {
         super.init(frame: .zero)
 
         titleLabel.text = title
-        titleLabel.font = .systemFont(ofSize: 32, weight: .bold)
+        titleLabel.font = AppTheme.font(32, weight: .bold)
         titleLabel.textColor = .white
 
         collectionView.backgroundColor = .clear
