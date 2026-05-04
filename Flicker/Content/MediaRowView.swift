@@ -26,12 +26,12 @@ final class MediaRowView: UIView {
 
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 36
-        layout.minimumLineSpacing = 36
+        layout.minimumInteritemSpacing = 44
+        layout.minimumLineSpacing = 44
 
         switch style {
         case .poster:
-            layout.itemSize = CGSize(width: 340, height: 510)
+            layout.itemSize = CGSize(width: 400, height: 600)
         case .thumbnail:
             layout.itemSize = CGSize(width: 480, height: 330)
         }
@@ -58,7 +58,7 @@ final class MediaRowView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
 
-        let rowHeight: CGFloat = style == .poster ? 530 : 350
+        let rowHeight: CGFloat = style == .poster ? 630 : 350
 
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor),

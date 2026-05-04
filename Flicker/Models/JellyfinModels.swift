@@ -47,6 +47,7 @@ struct JellyfinItem: Codable, Hashable {
     let studios: [JellyfinNamedItem]?
     let people: [JellyfinPerson]?
     let mediaStreams: [JellyfinMediaStream]?
+    let chapters: [JellyfinChapter]?
     let seasonId: String?
     let seriesId: String?
     let indexNumber: Int?
@@ -69,6 +70,7 @@ struct JellyfinItem: Codable, Hashable {
         case studios = "Studios"
         case people = "People"
         case mediaStreams = "MediaStreams"
+        case chapters = "Chapters"
         case seasonId = "SeasonId"
         case seriesId = "SeriesId"
         case indexNumber = "IndexNumber"
@@ -150,6 +152,20 @@ struct JellyfinPerson: Codable {
         case id = "Id"
         case role = "Role"
         case type = "Type"
+    }
+}
+
+struct JellyfinChapter: Codable {
+    let startPositionTicks: Int64
+    let name: String?
+
+    enum CodingKeys: String, CodingKey {
+        case startPositionTicks = "StartPositionTicks"
+        case name = "Name"
+    }
+
+    var startSeconds: Double {
+        Double(startPositionTicks) / 10_000_000.0
     }
 }
 

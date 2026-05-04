@@ -25,7 +25,10 @@ final class SearchViewController: UIViewController {
 
         resultsController.onSelect = { [weak self] item in
             if let rootVC = self?.parent as? RootViewController {
-                rootVC.showDetail(DetailViewController(item: item))
+                let vc: UIViewController = item.type == "BoxSet"
+                    ? CollectionViewController(item: item)
+                    : DetailViewController(item: item)
+                rootVC.showDetail(vc)
             }
         }
 
@@ -100,9 +103,9 @@ final class SearchResultsController: UIViewController, UICollectionViewDataSourc
 
     override init(nibName: String?, bundle: Bundle?) {
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 340, height: 510)
-        layout.minimumInteritemSpacing = 32
-        layout.minimumLineSpacing = 40
+        layout.itemSize = CGSize(width: 400, height: 600)
+        layout.minimumInteritemSpacing = 44
+        layout.minimumLineSpacing = 60
         layout.sectionInset = UIEdgeInsets(top: 24, left: 48, bottom: 48, right: 48)
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         super.init(nibName: nibName, bundle: bundle)

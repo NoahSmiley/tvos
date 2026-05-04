@@ -32,10 +32,10 @@ final class LibraryViewController: UIViewController {
         self.libraryType = libraryType
 
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 280, height: 420)
-        layout.minimumInteritemSpacing = 20
-        layout.minimumLineSpacing = 28
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 32, bottom: 48, right: 32)
+        layout.itemSize = CGSize(width: 400, height: 600)
+        layout.minimumInteritemSpacing = 44
+        layout.minimumLineSpacing = 60
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 48, bottom: 60, right: 48)
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
 
         super.init(nibName: nil, bundle: nil)
@@ -53,7 +53,7 @@ final class LibraryViewController: UIViewController {
     }
 
     private func showSkeleton() {
-        let grid = SkeletonGridView(columns: 5, rows: 2)
+        let grid = SkeletonGridView(columns: 4, rows: 2)
         grid.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(grid)
         let header = view.viewWithTag(300)!
@@ -92,6 +92,7 @@ final class LibraryViewController: UIViewController {
 
     private func setupCollectionView() {
         collectionView.backgroundColor = .clear
+        collectionView.clipsToBounds = false
         collectionView.register(MediaCardCell.self, forCellWithReuseIdentifier: "MediaCell")
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -152,7 +153,11 @@ extension LibraryViewController: UICollectionViewDataSource, UICollectionViewDel
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let rootVC = parent as? RootViewController {
-            rootVC.showDetail(DetailViewController(item: items[indexPath.item]))
+            let item = items[indexPath.item]
+            let vc: UIViewController = item.type == "BoxSet"
+                ? CollectionViewController(item: item)
+                : DetailViewController(item: item)
+            rootVC.showDetail(vc)
         }
     }
 }

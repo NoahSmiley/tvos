@@ -72,13 +72,13 @@ final class DetailViewController: UIViewController {
         let bg = bgColor.cgColor
         let clear = UIColor.clear.cgColor
 
-        bottomGradient.colors = [clear, UIColor(white: 0.04, alpha: 0.5).cgColor, bg]
-        bottomGradient.locations = [0.0, 0.55, 1.0]
+        bottomGradient.colors = [clear, UIColor(white: 0.04, alpha: 0.2).cgColor, bg]
+        bottomGradient.locations = [0.0, 0.7, 1.0]
         backdropImageView.layer.addSublayer(bottomGradient)
 
-        leftGradient.colors = [UIColor.black.withAlphaComponent(0.5).cgColor, clear]
+        leftGradient.colors = [UIColor.black.withAlphaComponent(0.15).cgColor, clear]
         leftGradient.startPoint = CGPoint(x: 0, y: 0.5)
-        leftGradient.endPoint = CGPoint(x: 1, y: 0.5)
+        leftGradient.endPoint = CGPoint(x: 0.1, y: 0.5)
         backdropImageView.layer.addSublayer(leftGradient)
 
         let backdropId = item.seriesId ?? item.id
@@ -514,6 +514,17 @@ final class DetailViewController: UIViewController {
         let startTicks = episode.userData?.playbackPositionTicks ?? 0
         let displayTitle = "S\(episode.parentIndexNumber ?? 0)E\(episode.indexNumber ?? 0) - \(episode.name)"
         let playerVC = PlayerViewController(streamURL: url, itemId: episode.id, title: displayTitle, startPositionTicks: startTicks)
+        playerVC.configureChapters(from: episode)
+
+        // Find next episode
+        if let idx = episodes.firstIndex(where: { $0.id == episode.id }), idx + 1 < episodes.count {
+            let next = episodes[idx + 1]
+            playerVC.setNextEpisode(next)
+            playerVC.onPlayNextEpisode = { [weak self] nextEp in
+                self?.playEpisode(nextEp)
+            }
+        }
+
         present(playerVC, animated: true)
     }
 
@@ -526,6 +537,7 @@ final class DetailViewController: UIViewController {
             title: item.seriesName ?? item.name,
             startPositionTicks: item.userData?.playbackPositionTicks ?? 0
         )
+        playerVC.configureChapters(from: item)
         present(playerVC, animated: true)
     }
 
@@ -533,21 +545,6 @@ final class DetailViewController: UIViewController {
         return [playButton]
     }
 
-    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        for press in presses {
-            if press.type == .menu {
-                // Navigate back to the previous tab via RootViewController
-                if let rootVC = parent as? RootViewController {
-                    let dest = rootVC.sidebarVC.selectedDestination
-                    rootVC.navigateBack(to: dest)
-                } else {
-                    dismiss(animated: true)
-                }
-                return
-            }
-        }
-        super.pressesBegan(presses, with: event)
-    }
 }
 
 // MARK: - Collection View (Cast only)

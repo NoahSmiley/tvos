@@ -34,6 +34,9 @@
 		A1000019 /* LiveTVRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001A /* LiveTVRowView.swift */; };
 		A100001A /* ShimmerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001B /* ShimmerView.swift */; };
 		A100001B /* LiveTVPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001C /* LiveTVPlayerViewController.swift */; };
+		A100001C /* PosterCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001D /* PosterCacheManager.swift */; };
+		A100001D /* PosterCache in Resources */ = {isa = PBXBuildFile; fileRef = B100001E /* PosterCache */; };
+		A100001E /* CollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001F /* CollectionViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +68,9 @@
 		B100001A /* LiveTVRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVRowView.swift; sourceTree = "<group>"; };
 		B100001B /* ShimmerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmerView.swift; sourceTree = "<group>"; };
 		B100001C /* LiveTVPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVPlayerViewController.swift; sourceTree = "<group>"; };
+		B100001D /* PosterCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosterCacheManager.swift; sourceTree = "<group>"; };
+		B100001E /* PosterCache */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PosterCache; sourceTree = "<group>"; };
+		B100001F /* CollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewController.swift; sourceTree = "<group>"; };
 		C1000001 /* Flicker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flicker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -165,6 +171,8 @@
 				B1000013 /* SearchViewController.swift */,
 				B1000014 /* SettingsViewController.swift */,
 				B100001B /* ShimmerView.swift */,
+				B100001D /* PosterCacheManager.swift */,
+				B100001F /* CollectionViewController.swift */,
 			);
 			path = Content;
 			sourceTree = "<group>";
@@ -190,6 +198,7 @@
 			isa = PBXGroup;
 			children = (
 				B1000016 /* Info.plist */,
+				B100001E /* PosterCache */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -252,6 +261,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A100001D /* PosterCache in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,6 +299,8 @@
 				A1000019 /* LiveTVRowView.swift in Sources */,
 				A100001A /* ShimmerView.swift in Sources */,
 				A100001B /* LiveTVPlayerViewController.swift in Sources */,
+				A100001C /* PosterCacheManager.swift in Sources */,
+				A100001E /* CollectionViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

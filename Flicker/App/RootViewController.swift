@@ -17,6 +17,7 @@ final class RootViewController: UIViewController {
     private var currentContentVC: UIViewController?
     private var currentDestination: SidebarDestination?
     private var cachedVCs: [SidebarDestination: UIViewController] = [:]
+    private var navigationStack: [(vc: UIViewController, destination: SidebarDestination?, focusedView: UIView?)] = []
 
     // Remember which content view had focus before entering sidebar
     private weak var lastFocusedContentView: UIView?
@@ -196,6 +197,8 @@ final class RootViewController: UIViewController {
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         if focusIsInSidebar {
             return [sidebarVC]
+        } else if let saved = lastFocusedContentView, saved.window != nil {
+            return [saved]
         } else if let content = currentContentVC {
             return [content]
         }
@@ -237,13 +240,31 @@ final class RootViewController: UIViewController {
 
     /// Push a detail view into the content area (keeps sidebar visible)
     func showDetail(_ detailVC: UIViewController) {
-        currentDestination = nil // allow navigating back to the same tab
+        // Save current state to stack before navigating, including the currently focused view
+        if let currentVC = currentContentVC {
+            let focused = UIScreen.main.focusedView
+            navigationStack.append((vc: currentVC, destination: currentDestination, focusedView: focused))
+        }
+        currentDestination = nil
         lastFocusedContentView = nil
         transitionToContent(detailVC)
     }
 
+    /// Go back to the previous page in the navigation stack
+    func goBack() {
+        guard let previous = navigationStack.popLast() else { return }
+        suppressSidebarExpand = true
+        focusIsInSidebar = false
+        currentDestination = previous.destination
+        lastFocusedContentView = previous.focusedView
+        transitionToContent(previous.vc)
+        setNeedsFocusUpdate()
+        updateFocusIfNeeded()
+    }
+
     /// Navigate back to a tab (used by detail pages on Menu press)
     func navigateBack(to destination: SidebarDestination) {
+        navigationStack.removeAll()
         suppressSidebarExpand = true
         focusIsInSidebar = false
         currentDestination = nil // force reload
@@ -277,10 +298,33 @@ final class RootViewController: UIViewController {
         currentContentVC = newVC
 
         if let oldVC, oldVC !== newVC {
-            oldVC.willMove(toParent: nil)
-            oldVC.view.removeFromSuperview()
-            oldVC.removeFromParent()
+            let isInStack = navigationStack.contains { $0.vc === oldVC }
+            if isInStack {
+                // Keep in parent but hide — we may navigate back to it
+                oldVC.view.removeFromSuperview()
+            } else {
+                oldVC.willMove(toParent: nil)
+                oldVC.view.removeFromSuperview()
+                oldVC.removeFromParent()
+            }
         }
+    }
+
+    // MARK: - Back Button
+
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        for press in presses {
+            if press.type == .menu {
+                if !navigationStack.isEmpty {
+                    goBack()
+                    return
+                }
+                // On a root tab — don't exit the app, do nothing
+                // (tvOS will only exit if we call super)
+                return
+            }
+        }
+        super.pressesBegan(presses, with: event)
     }
 }
 

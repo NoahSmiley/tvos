@@ -134,7 +134,7 @@ final class JellyfinAPI {
         guard let userId else { throw JellyfinError.notConfigured }
         var params: [String: String] = [
             "Limit": "\(limit)",
-            "Fields": "Overview,Genres,Studios,People,MediaStreams",
+            "Fields": "Overview,Genres,Studios,People,MediaStreams,Chapters",
             "EnableImageTypes": "Primary,Backdrop",
             "ImageTypeLimit": "1"
         ]
@@ -174,7 +174,7 @@ final class JellyfinAPI {
             "StartIndex": "\(startIndex)",
             "Limit": "\(limit)",
             "Recursive": "true",
-            "Fields": "Overview,Genres,Studios,People,MediaStreams",
+            "Fields": "Overview,Genres,Studios,People,MediaStreams,Chapters",
             "EnableImageTypes": "Primary,Backdrop",
             "ImageTypeLimit": "1"
         ]
@@ -191,7 +191,7 @@ final class JellyfinAPI {
         guard let userId else { throw JellyfinError.notConfigured }
         let data = try await get(
             path: "Users/\(userId)/Items/\(id)",
-            queryItems: ["Fields": "Overview,Genres,Studios,People,MediaStreams"]
+            queryItems: ["Fields": "Overview,Genres,Studios,People,MediaStreams,Chapters"]
         )
         return try decoder.decode(JellyfinItem.self, from: data)
     }
@@ -208,7 +208,7 @@ final class JellyfinAPI {
         let params: [String: String] = [
             "UserId": userId,
             "SeasonId": seasonId,
-            "Fields": "Overview,MediaStreams"
+            "Fields": "Overview,MediaStreams,Chapters"
         ]
         let data = try await get(path: "Shows/\(seriesId)/Episodes", queryItems: params)
         let response = try decoder.decode(JellyfinItemsResponse.self, from: data)
@@ -250,6 +250,7 @@ final class JellyfinAPI {
             URLQueryItem(name: "TranscodingMaxAudioChannels", value: "8"),
             URLQueryItem(name: "MaxStreamingBitrate", value: "\(bitrate)"),
             URLQueryItem(name: "VideoBitrate", value: "\(bitrate)"),
+            URLQueryItem(name: "SubtitleMethod", value: "Hls"),
             URLQueryItem(name: "api_key", value: token)
         ]
 
