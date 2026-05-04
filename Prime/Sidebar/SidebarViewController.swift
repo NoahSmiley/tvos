@@ -1,9 +1,5 @@
 import UIKit
 
-protocol SidebarDelegate: AnyObject {
-    func sidebarDidSelectDestination(_ destination: SidebarDestination)
-    func sidebarDidRequestToggle()
-}
 
 final class SidebarViewController: UIViewController {
 

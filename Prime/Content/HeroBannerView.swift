@@ -1,8 +1,5 @@
 import UIKit
 
-protocol HeroBannerDelegate: AnyObject {
-    func heroBannerDidSelectItem(_ item: JellyfinItem)
-}
 
 final class HeroBannerView: UIView {
 

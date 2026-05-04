@@ -15,8 +15,3 @@ struct IPTVChannel: Hashable {
         lhs.id == rhs.id
     }
 }
-
-struct IPTVGroup {
-    let name: String
-    let channels: [IPTVChannel]
-}

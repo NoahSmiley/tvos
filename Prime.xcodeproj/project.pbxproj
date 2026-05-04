@@ -12,10 +12,8 @@
 		A1000003 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003 /* SidebarDestination.swift */; };
 		A1000004 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004 /* SidebarViewController.swift */; };
 		A1000005 /* SidebarMenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005 /* SidebarMenuButton.swift */; };
-		A1000006 /* JellyfinModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006 /* JellyfinModels.swift */; };
 		A1000007 /* JellyfinAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007 /* JellyfinAPI.swift */; };
 		A1000008 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008 /* ImageLoader.swift */; };
-		A1000009 /* IPTVModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000009 /* IPTVModels.swift */; };
 		A100000A /* M3UParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000A /* M3UParser.swift */; };
 		A100000B /* IPTVManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000B /* IPTVManager.swift */; };
 		A100000C /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000C /* HomeViewController.swift */; };
@@ -39,6 +37,50 @@
 		A1000032 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000030 /* AppTheme.swift */; };
 		A1000033 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = B1000031 /* Fonts */; };
 		A100001E /* CollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100001F /* CollectionViewController.swift */; };
+		A1000080 /* JellyfinAuthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000080 /* JellyfinAuthResponse.swift */; };
+		A1000081 /* JellyfinUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000081 /* JellyfinUser.swift */; };
+		A1000082 /* JellyfinItemsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000082 /* JellyfinItemsResponse.swift */; };
+		A1000083 /* JellyfinItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000083 /* JellyfinItem.swift */; };
+		A1000084 /* JellyfinUserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000084 /* JellyfinUserData.swift */; };
+		A1000085 /* JellyfinNamedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000085 /* JellyfinNamedItem.swift */; };
+		A1000086 /* JellyfinPerson.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000086 /* JellyfinPerson.swift */; };
+		A1000087 /* JellyfinChapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000087 /* JellyfinChapter.swift */; };
+		A1000088 /* JellyfinMediaStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000088 /* JellyfinMediaStream.swift */; };
+		A1000089 /* JellyfinLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000089 /* JellyfinLibrary.swift */; };
+		A100008A /* JellyfinLibraryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100008A /* JellyfinLibraryResponse.swift */; };
+		A100008B /* JellyfinPlaybackInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100008B /* JellyfinPlaybackInfo.swift */; };
+		A100008C /* JellyfinMediaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100008C /* JellyfinMediaSource.swift */; };
+		A10000A0 /* XtreamCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A0 /* XtreamCategory.swift */; };
+		A10000A1 /* XtreamStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A1 /* XtreamStream.swift */; };
+		A10000A2 /* XtreamEPGEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A2 /* XtreamEPGEntry.swift */; };
+		A10000A3 /* XtreamEPGResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A3 /* XtreamEPGResponse.swift */; };
+		A10000A4 /* XtreamError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000A4 /* XtreamError.swift */; };
+		A10000B0 /* LibraryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B0 /* LibraryType.swift */; };
+		A10000B1 /* MediaRowStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B1 /* MediaRowStyle.swift */; };
+		A10000B2 /* MediaRowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B2 /* MediaRowDelegate.swift */; };
+		A10000B3 /* LiveTVRowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B3 /* LiveTVRowDelegate.swift */; };
+		A10000B4 /* LiveTVCardCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000B4 /* LiveTVCardCell.swift */; };
+		A10000C0 /* CastCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C0 /* CastCell.swift */; };
+		A10000C1 /* SeasonPillButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C1 /* SeasonPillButton.swift */; };
+		A10000C2 /* EpisodeRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C2 /* EpisodeRowView.swift */; };
+		A10000C3 /* FocusableButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C3 /* FocusableButton.swift */; };
+		A10000C4 /* SkeletonRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C4 /* SkeletonRowView.swift */; };
+		A10000C5 /* SkeletonGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C5 /* SkeletonGridView.swift */; };
+		A10000C6 /* SkeletonEpisodeRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C6 /* SkeletonEpisodeRowView.swift */; };
+		A10000C7 /* PosterPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C7 /* PosterPickerViewController.swift */; };
+		A10000C8 /* PosterPickerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C8 /* PosterPickerCell.swift */; };
+		A10000C9 /* SearchResultsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000C9 /* SearchResultsController.swift */; };
+		A10000D0 /* IPTVChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000D0 /* IPTVChannel.swift */; };
+		A10000D1 /* IPTVGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000D1 /* IPTVGroup.swift */; };
+		A10000D2 /* EpisodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000D2 /* EpisodeCell.swift */; };
+		A10000E0 /* SidebarDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E0 /* SidebarDelegate.swift */; };
+		A10000E1 /* JellyfinError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E1 /* JellyfinError.swift */; };
+		A10000E2 /* HeroBannerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E2 /* HeroBannerDelegate.swift */; };
+		A10000E3 /* LiveTVCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E3 /* LiveTVCard.swift */; };
+		A10000E4 /* CollectionMovieCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E4 /* CollectionMovieCard.swift */; };
+		A10000E5 /* RemoteStreamQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E5 /* RemoteStreamQuality.swift */; };
+		A10000E6 /* IPTVError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E6 /* IPTVError.swift */; };
+		A10000E7 /* SurfChannelCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000E7 /* SurfChannelCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,10 +89,8 @@
 		B1000003 /* SidebarDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDestination.swift; sourceTree = "<group>"; };
 		B1000004 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
 		B1000005 /* SidebarMenuButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarMenuButton.swift; sourceTree = "<group>"; };
-		B1000006 /* JellyfinModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinModels.swift; sourceTree = "<group>"; };
 		B1000007 /* JellyfinAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinAPI.swift; sourceTree = "<group>"; };
 		B1000008 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
-		B1000009 /* IPTVModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPTVModels.swift; sourceTree = "<group>"; };
 		B100000A /* M3UParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = M3UParser.swift; sourceTree = "<group>"; };
 		B100000B /* IPTVManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPTVManager.swift; sourceTree = "<group>"; };
 		B100000C /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -76,6 +116,50 @@
 		B1000031 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 		B100001F /* CollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewController.swift; sourceTree = "<group>"; };
 		C1000001 /* Prime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Prime.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1000080 /* JellyfinAuthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinAuthResponse.swift; sourceTree = "<group>"; };
+		B1000081 /* JellyfinUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinUser.swift; sourceTree = "<group>"; };
+		B1000082 /* JellyfinItemsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinItemsResponse.swift; sourceTree = "<group>"; };
+		B1000083 /* JellyfinItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinItem.swift; sourceTree = "<group>"; };
+		B1000084 /* JellyfinUserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinUserData.swift; sourceTree = "<group>"; };
+		B1000085 /* JellyfinNamedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinNamedItem.swift; sourceTree = "<group>"; };
+		B1000086 /* JellyfinPerson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinPerson.swift; sourceTree = "<group>"; };
+		B1000087 /* JellyfinChapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinChapter.swift; sourceTree = "<group>"; };
+		B1000088 /* JellyfinMediaStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinMediaStream.swift; sourceTree = "<group>"; };
+		B1000089 /* JellyfinLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinLibrary.swift; sourceTree = "<group>"; };
+		B100008A /* JellyfinLibraryResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinLibraryResponse.swift; sourceTree = "<group>"; };
+		B100008B /* JellyfinPlaybackInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinPlaybackInfo.swift; sourceTree = "<group>"; };
+		B100008C /* JellyfinMediaSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinMediaSource.swift; sourceTree = "<group>"; };
+		B10000A0 /* XtreamCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamCategory.swift; sourceTree = "<group>"; };
+		B10000A1 /* XtreamStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamStream.swift; sourceTree = "<group>"; };
+		B10000A2 /* XtreamEPGEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamEPGEntry.swift; sourceTree = "<group>"; };
+		B10000A3 /* XtreamEPGResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamEPGResponse.swift; sourceTree = "<group>"; };
+		B10000A4 /* XtreamError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XtreamError.swift; sourceTree = "<group>"; };
+		B10000B0 /* LibraryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryType.swift; sourceTree = "<group>"; };
+		B10000B1 /* MediaRowStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRowStyle.swift; sourceTree = "<group>"; };
+		B10000B2 /* MediaRowDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRowDelegate.swift; sourceTree = "<group>"; };
+		B10000B3 /* LiveTVRowDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVRowDelegate.swift; sourceTree = "<group>"; };
+		B10000B4 /* LiveTVCardCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVCardCell.swift; sourceTree = "<group>"; };
+		B10000C0 /* CastCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CastCell.swift; sourceTree = "<group>"; };
+		B10000C1 /* SeasonPillButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonPillButton.swift; sourceTree = "<group>"; };
+		B10000C2 /* EpisodeRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeRowView.swift; sourceTree = "<group>"; };
+		B10000C3 /* FocusableButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusableButton.swift; sourceTree = "<group>"; };
+		B10000C4 /* SkeletonRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonRowView.swift; sourceTree = "<group>"; };
+		B10000C5 /* SkeletonGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonGridView.swift; sourceTree = "<group>"; };
+		B10000C6 /* SkeletonEpisodeRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonEpisodeRowView.swift; sourceTree = "<group>"; };
+		B10000C7 /* PosterPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosterPickerViewController.swift; sourceTree = "<group>"; };
+		B10000C8 /* PosterPickerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosterPickerCell.swift; sourceTree = "<group>"; };
+		B10000C9 /* SearchResultsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsController.swift; sourceTree = "<group>"; };
+		B10000D0 /* IPTVChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPTVChannel.swift; sourceTree = "<group>"; };
+		B10000D1 /* IPTVGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPTVGroup.swift; sourceTree = "<group>"; };
+		B10000D2 /* EpisodeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeCell.swift; sourceTree = "<group>"; };
+		B10000E0 /* SidebarDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDelegate.swift; sourceTree = "<group>"; };
+		B10000E1 /* JellyfinError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JellyfinError.swift; sourceTree = "<group>"; };
+		B10000E2 /* HeroBannerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroBannerDelegate.swift; sourceTree = "<group>"; };
+		B10000E3 /* LiveTVCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVCard.swift; sourceTree = "<group>"; };
+		B10000E4 /* CollectionMovieCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionMovieCard.swift; sourceTree = "<group>"; };
+		B10000E5 /* RemoteStreamQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteStreamQuality.swift; sourceTree = "<group>"; };
+		B10000E6 /* IPTVError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPTVError.swift; sourceTree = "<group>"; };
+		B10000E7 /* SurfChannelCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfChannelCard.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,8 +210,26 @@
 			isa = PBXGroup;
 			children = (
 				B1000003 /* SidebarDestination.swift */,
-				B1000006 /* JellyfinModels.swift */,
-				B1000009 /* IPTVModels.swift */,
+																																						B1000080 /* JellyfinAuthResponse.swift */,
+				B1000081 /* JellyfinUser.swift */,
+				B1000082 /* JellyfinItemsResponse.swift */,
+				B1000083 /* JellyfinItem.swift */,
+				B1000084 /* JellyfinUserData.swift */,
+				B1000085 /* JellyfinNamedItem.swift */,
+				B1000086 /* JellyfinPerson.swift */,
+				B1000087 /* JellyfinChapter.swift */,
+				B1000088 /* JellyfinMediaStream.swift */,
+				B1000089 /* JellyfinLibrary.swift */,
+				B100008A /* JellyfinLibraryResponse.swift */,
+				B100008B /* JellyfinPlaybackInfo.swift */,
+				B100008C /* JellyfinMediaSource.swift */,
+							B10000A0 /* XtreamCategory.swift */,
+				B10000A1 /* XtreamStream.swift */,
+				B10000A2 /* XtreamEPGEntry.swift */,
+				B10000A3 /* XtreamEPGResponse.swift */,
+							B10000B0 /* LibraryType.swift */,
+							B10000D0 /* IPTVChannel.swift */,
+				B10000D1 /* IPTVGroup.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -137,6 +239,7 @@
 			children = (
 				B1000004 /* SidebarViewController.swift */,
 				B1000005 /* SidebarMenuButton.swift */,
+							B10000E0 /* SidebarDelegate.swift */,
 			);
 			path = Sidebar;
 			sourceTree = "<group>";
@@ -146,6 +249,7 @@
 			children = (
 				B1000007 /* JellyfinAPI.swift */,
 				B1000008 /* ImageLoader.swift */,
+							B10000E1 /* JellyfinError.swift */,
 			);
 			path = Jellyfin;
 			sourceTree = "<group>";
@@ -156,6 +260,8 @@
 				B100000A /* M3UParser.swift */,
 				B100000B /* IPTVManager.swift */,
 				B1000017 /* XtreamAPI.swift */,
+							B10000A4 /* XtreamError.swift */,
+							B10000E6 /* IPTVError.swift */,
 			);
 			path = IPTV;
 			sourceTree = "<group>";
@@ -178,6 +284,25 @@
 				B100001B /* ShimmerView.swift */,
 				B100001D /* PosterCacheManager.swift */,
 				B100001F /* CollectionViewController.swift */,
+							B10000B1 /* MediaRowStyle.swift */,
+				B10000B2 /* MediaRowDelegate.swift */,
+				B10000B3 /* LiveTVRowDelegate.swift */,
+				B10000B4 /* LiveTVCardCell.swift */,
+							B10000C0 /* CastCell.swift */,
+				B10000C1 /* SeasonPillButton.swift */,
+				B10000C2 /* EpisodeRowView.swift */,
+				B10000C3 /* FocusableButton.swift */,
+				B10000C4 /* SkeletonRowView.swift */,
+				B10000C5 /* SkeletonGridView.swift */,
+				B10000C6 /* SkeletonEpisodeRowView.swift */,
+				B10000C7 /* PosterPickerViewController.swift */,
+				B10000C8 /* PosterPickerCell.swift */,
+				B10000C9 /* SearchResultsController.swift */,
+							B10000D2 /* EpisodeCell.swift */,
+							B10000E2 /* HeroBannerDelegate.swift */,
+				B10000E3 /* LiveTVCard.swift */,
+				B10000E4 /* CollectionMovieCard.swift */,
+				B10000E5 /* RemoteStreamQuality.swift */,
 			);
 			path = Content;
 			sourceTree = "<group>";
@@ -195,6 +320,7 @@
 			children = (
 				B1000015 /* PlayerViewController.swift */,
 				B100001C /* LiveTVPlayerViewController.swift */,
+							B10000E7 /* SurfChannelCard.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -292,11 +418,9 @@
 				A1000003 /* SidebarDestination.swift in Sources */,
 				A1000004 /* SidebarViewController.swift in Sources */,
 				A1000005 /* SidebarMenuButton.swift in Sources */,
-				A1000006 /* JellyfinModels.swift in Sources */,
-				A1000007 /* JellyfinAPI.swift in Sources */,
+						A1000007 /* JellyfinAPI.swift in Sources */,
 				A1000008 /* ImageLoader.swift in Sources */,
-				A1000009 /* IPTVModels.swift in Sources */,
-				A100000A /* M3UParser.swift in Sources */,
+						A100000A /* M3UParser.swift in Sources */,
 				A100000B /* IPTVManager.swift in Sources */,
 				A100000C /* HomeViewController.swift in Sources */,
 				A100000D /* MediaRowView.swift in Sources */,
@@ -317,6 +441,50 @@
 				A100001C /* PosterCacheManager.swift in Sources */,
 				A1000032 /* AppTheme.swift in Sources */,
 				A100001E /* CollectionViewController.swift in Sources */,
+																																				A1000080 /* JellyfinAuthResponse.swift in Sources */,
+				A1000081 /* JellyfinUser.swift in Sources */,
+				A1000082 /* JellyfinItemsResponse.swift in Sources */,
+				A1000083 /* JellyfinItem.swift in Sources */,
+				A1000084 /* JellyfinUserData.swift in Sources */,
+				A1000085 /* JellyfinNamedItem.swift in Sources */,
+				A1000086 /* JellyfinPerson.swift in Sources */,
+				A1000087 /* JellyfinChapter.swift in Sources */,
+				A1000088 /* JellyfinMediaStream.swift in Sources */,
+				A1000089 /* JellyfinLibrary.swift in Sources */,
+				A100008A /* JellyfinLibraryResponse.swift in Sources */,
+				A100008B /* JellyfinPlaybackInfo.swift in Sources */,
+				A100008C /* JellyfinMediaSource.swift in Sources */,
+							A10000A0 /* XtreamCategory.swift in Sources */,
+				A10000A1 /* XtreamStream.swift in Sources */,
+				A10000A2 /* XtreamEPGEntry.swift in Sources */,
+				A10000A3 /* XtreamEPGResponse.swift in Sources */,
+				A10000A4 /* XtreamError.swift in Sources */,
+							A10000B0 /* LibraryType.swift in Sources */,
+				A10000B1 /* MediaRowStyle.swift in Sources */,
+				A10000B2 /* MediaRowDelegate.swift in Sources */,
+				A10000B3 /* LiveTVRowDelegate.swift in Sources */,
+				A10000B4 /* LiveTVCardCell.swift in Sources */,
+							A10000C0 /* CastCell.swift in Sources */,
+				A10000C1 /* SeasonPillButton.swift in Sources */,
+				A10000C2 /* EpisodeRowView.swift in Sources */,
+				A10000C3 /* FocusableButton.swift in Sources */,
+				A10000C4 /* SkeletonRowView.swift in Sources */,
+				A10000C5 /* SkeletonGridView.swift in Sources */,
+				A10000C6 /* SkeletonEpisodeRowView.swift in Sources */,
+				A10000C7 /* PosterPickerViewController.swift in Sources */,
+				A10000C8 /* PosterPickerCell.swift in Sources */,
+				A10000C9 /* SearchResultsController.swift in Sources */,
+							A10000D0 /* IPTVChannel.swift in Sources */,
+				A10000D1 /* IPTVGroup.swift in Sources */,
+				A10000D2 /* EpisodeCell.swift in Sources */,
+							A10000E0 /* SidebarDelegate.swift in Sources */,
+				A10000E1 /* JellyfinError.swift in Sources */,
+				A10000E2 /* HeroBannerDelegate.swift in Sources */,
+				A10000E3 /* LiveTVCard.swift in Sources */,
+				A10000E4 /* CollectionMovieCard.swift in Sources */,
+				A10000E5 /* RemoteStreamQuality.swift in Sources */,
+				A10000E6 /* IPTVError.swift in Sources */,
+				A10000E7 /* SurfChannelCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
