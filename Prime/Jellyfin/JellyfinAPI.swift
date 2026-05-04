@@ -12,8 +12,8 @@ final class JellyfinAPI {
     private let hardcodedPassword = ""
 
     private let deviceId: String
-    private let deviceName = "Flicker tvOS"
-    private let clientName = "Flicker"
+    private let deviceName = "Prime tvOS"
+    private let clientName = "Athion Prime"
     private let clientVersion = "1.0.0"
 
     private let session: URLSession

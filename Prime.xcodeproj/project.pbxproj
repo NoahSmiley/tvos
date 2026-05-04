@@ -71,7 +71,7 @@
 		B100001D /* PosterCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosterCacheManager.swift; sourceTree = "<group>"; };
 		B100001E /* PosterCache */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PosterCache; sourceTree = "<group>"; };
 		B100001F /* CollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewController.swift; sourceTree = "<group>"; };
-		C1000001 /* Flicker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flicker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1000001 /* Prime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Prime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,12 +88,12 @@
 		E1000001 = {
 			isa = PBXGroup;
 			children = (
-				E1000002 /* Flicker */,
+				E1000002 /* Prime */,
 				E1000009 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		E1000002 /* Flicker */ = {
+		E1000002 /* Prime */ = {
 			isa = PBXGroup;
 			children = (
 				E1000003 /* App */,
@@ -105,7 +105,7 @@
 				E100000A /* Player */,
 				E100000B /* Resources */,
 			);
-			path = Flicker;
+			path = Prime;
 			sourceTree = "<group>";
 		};
 		E1000003 /* App */ = {
@@ -180,7 +180,7 @@
 		E1000009 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C1000001 /* Flicker.app */,
+				C1000001 /* Prime.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -206,9 +206,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F1000001 /* Flicker */ = {
+		F1000001 /* Prime */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F1000004 /* Build configuration list for PBXNativeTarget "Flicker" */;
+			buildConfigurationList = F1000004 /* Build configuration list for PBXNativeTarget "Prime" */;
 			buildPhases = (
 				F1000002 /* Sources */,
 				D1000001 /* Frameworks */,
@@ -218,9 +218,9 @@
 			);
 			dependencies = (
 			);
-			name = Flicker;
-			productName = Flicker;
-			productReference = C1000001 /* Flicker.app */;
+			name = Prime;
+			productName = Prime;
+			productReference = C1000001 /* Prime.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -238,7 +238,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F1000006 /* Build configuration list for PBXProject "Flicker" */;
+			buildConfigurationList = F1000006 /* Build configuration list for PBXProject "Prime" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -251,7 +251,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F1000001 /* Flicker */,
+				F1000001 /* Prime */,
 			);
 		};
 /* End PBXProject section */
@@ -370,14 +370,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8656625Z2P;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Flicker/Resources/Info.plist;
+				INFOPLIST_FILE = Prime/Resources/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.athion.Flicker;
+				PRODUCT_BUNDLE_IDENTIFIER = me.athion.Prime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -393,14 +393,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8656625Z2P;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Flicker/Resources/Info.plist;
+				INFOPLIST_FILE = Prime/Resources/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.athion.Flicker;
+				PRODUCT_BUNDLE_IDENTIFIER = me.athion.Prime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -411,7 +411,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F1000004 /* Build configuration list for PBXNativeTarget "Flicker" */ = {
+		F1000004 /* Build configuration list for PBXNativeTarget "Prime" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				G1000003 /* Debug */,
@@ -420,7 +420,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F1000006 /* Build configuration list for PBXProject "Flicker" */ = {
+		F1000006 /* Build configuration list for PBXProject "Prime" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				G1000001 /* Debug */,
